@@ -10,8 +10,9 @@ import { calculateAdoptionCurve } from "../models/adoptionCurve";
 import { findCrossoverCases } from "../models/costBenefit";
 import { analyzeFunnel } from "../models/funnel";
 import { clamp } from "../utils/math";
-import { formatDecimal1, formatNumber, formatPercent } from "../utils/format";
+import { formatPercent } from "../utils/format";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useFormatters } from "../i18n/useFormatters";
 import shared from "./pageShared.module.css";
 
 type DashboardParams = {
@@ -45,22 +46,35 @@ const DEFAULT_PARAMS: DashboardParams = {
 };
 
 const SCENARIO_DEFS = [
-  { id: "pessimistic", label: "悲観", growthAdjust: -0.05, adoptionAdjust: -0.1 },
-  { id: "base", label: "標準", growthAdjust: 0, adoptionAdjust: 0 },
-  { id: "optimistic", label: "楽観", growthAdjust: 0.05, adoptionAdjust: 0.1 },
+  { id: "pessimistic", labelKey: "dashboard.scenario.pessimistic", growthAdjust: -0.05, adoptionAdjust: -0.1 },
+  { id: "base", labelKey: "dashboard.scenario.base", growthAdjust: 0, adoptionAdjust: 0 },
+  { id: "optimistic", labelKey: "dashboard.scenario.optimistic", growthAdjust: 0.05, adoptionAdjust: 0.1 },
+];
+
+const FUNNEL_STAGE_IDS = [
+  "inquiry",
+  "proposal",
+  "poc_start",
+  "poc_success",
+  "production",
+  "retention",
+  "expansion",
 ];
 
 const START_YEAR = 2025;
 const END_YEAR = 2035;
 
 export function ScenarioDashboardPage() {
-  const { t } = useLanguage();
+  const { t, tList } = useLanguage();
+  const f = useFormatters();
   const [params, setParams] = useState<DashboardParams>(DEFAULT_PARAMS);
 
   const update = <K extends keyof DashboardParams>(key: K, value: DashboardParams[K]) =>
     setParams((prev) => ({ ...prev, [key]: value }));
 
   const scenarios = useMemo(() => {
+    const regulationDrag = 1 - params.regulationRisk * 0.2;
+    const aiSavingsFactor = 1 + params.aiCostReduction * 0.4;
     return SCENARIO_DEFS.map((scenario) => {
       const growth = calculateMarketGrowth({
         initialMarketSize: params.initialMarketSize,
@@ -69,7 +83,11 @@ export function ScenarioDashboardPage() {
         growthRate: clamp(params.marketGrowthRate + scenario.growthAdjust, 0, 0.6),
       });
       const adoption = calculateAdoptionCurve({
-        maxAdoptionRate: clamp(params.maxAdoptionRate + scenario.adoptionAdjust, 0.1, 1),
+        maxAdoptionRate: clamp(
+          (params.maxAdoptionRate + scenario.adoptionAdjust) * (1 - params.regulationRisk * 0.15),
+          0.1,
+          1,
+        ),
         speed: params.adoptionSpeed,
         centerYear: params.adoptionCenterYear,
         startYear: START_YEAR,
@@ -77,12 +95,14 @@ export function ScenarioDashboardPage() {
       });
       const profit = growth.map((g, i) => {
         const a = adoption[i];
+        const effectiveMarket = g.marketSize * regulationDrag;
         const aiContribution =
-          g.marketSize *
+          effectiveMarket *
           a.adoptionRate *
           (1 - params.governanceCostRatio) *
-          (1 - params.talentShortageImpact * 0.5);
-        const humanContribution = g.marketSize * (1 - a.adoptionRate) * 0.6;
+          (1 - params.talentShortageImpact * 0.5) *
+          aiSavingsFactor;
+        const humanContribution = effectiveMarket * (1 - a.adoptionRate) * 0.6;
         return {
           year: g.year,
           profit: aiContribution + humanContribution,
@@ -126,16 +146,15 @@ export function ScenarioDashboardPage() {
     const production = pocSuccess * params.productionAdoptionRate;
     const retention = production * params.retentionRate;
     const expansion = retention * 0.5;
-    return analyzeFunnel([
-      { id: "inquiry", label: "問い合わせ", count: Math.round(inquiry) },
-      { id: "proposal", label: "初回提案", count: Math.round(proposal) },
-      { id: "poc_start", label: "PoC開始", count: Math.round(pocStart) },
-      { id: "poc_success", label: "PoC成功", count: Math.round(pocSuccess) },
-      { id: "production", label: "本番導入", count: Math.round(production) },
-      { id: "retention", label: "継続利用", count: Math.round(retention) },
-      { id: "expansion", label: "拡張利用", count: Math.round(expansion) },
-    ]);
-  }, [params.pocSuccessRate, params.productionAdoptionRate, params.retentionRate]);
+    const counts = [inquiry, proposal, pocStart, pocSuccess, production, retention, expansion];
+    return analyzeFunnel(
+      FUNNEL_STAGE_IDS.map((id, i) => ({
+        id,
+        label: t(`funnel.stage.${id}`),
+        count: Math.round(counts[i]),
+      })),
+    );
+  }, [params.pocSuccessRate, params.productionAdoptionRate, params.retentionRate, t]);
 
   const riskScore = useMemo(() => {
     const score =
@@ -148,6 +167,7 @@ export function ScenarioDashboardPage() {
   }, [params]);
 
   const years = baseScenario.growth.map((g) => g.year);
+  const scenarioLabels = scenarios.map((s) => t(s.labelKey));
 
   const marketOption = useMemo(
     () => ({
@@ -155,16 +175,16 @@ export function ScenarioDashboardPage() {
       legend: { top: 0 },
       tooltip: { trigger: "axis" as const },
       grid: { top: 40, left: 56, right: 24, bottom: 40 },
-      xAxis: { type: "category" as const, data: years, name: "年" },
-      yAxis: { type: "value" as const, name: "市場規模指数" },
-      series: scenarios.map((s) => ({
-        name: s.label,
+      xAxis: { type: "category" as const, data: years, name: t("common.year") },
+      yAxis: { type: "value" as const, name: t("dashboard.yAxis.market") },
+      series: scenarios.map((s, i) => ({
+        name: scenarioLabels[i],
         type: "line" as const,
         smooth: true,
         data: s.growth.map((p) => Number(p.marketSize.toFixed(1))),
       })),
     }),
-    [scenarios, years],
+    [scenarios, years, scenarioLabels, t],
   );
 
   const adoptionOption = useMemo(
@@ -173,23 +193,23 @@ export function ScenarioDashboardPage() {
       legend: { top: 0 },
       tooltip: { trigger: "axis" as const },
       grid: { top: 40, left: 56, right: 24, bottom: 40 },
-      xAxis: { type: "category" as const, data: years, name: "年" },
+      xAxis: { type: "category" as const, data: years, name: t("common.year") },
       yAxis: {
         type: "value" as const,
-        name: "AI導入率 (%)",
+        name: t("dashboard.yAxis.adoption"),
         min: 0,
         max: 100,
         axisLabel: { formatter: "{value}%" },
       },
-      series: scenarios.map((s) => ({
-        name: s.label,
+      series: scenarios.map((s, i) => ({
+        name: scenarioLabels[i],
         type: "line" as const,
         smooth: true,
         areaStyle: s.id === "base" ? { opacity: 0.1 } : undefined,
         data: s.adoption.map((p) => Number(p.adoptionRatePercent.toFixed(1))),
       })),
     }),
-    [scenarios, years],
+    [scenarios, years, scenarioLabels, t],
   );
 
   const profitOption = useMemo(
@@ -198,16 +218,16 @@ export function ScenarioDashboardPage() {
       legend: { top: 0 },
       tooltip: { trigger: "axis" as const },
       grid: { top: 40, left: 56, right: 24, bottom: 40 },
-      xAxis: { type: "category" as const, data: years, name: "年" },
-      yAxis: { type: "value" as const, name: "推定貢献度 (仮想単位)" },
-      series: scenarios.map((s) => ({
-        name: s.label,
+      xAxis: { type: "category" as const, data: years, name: t("common.year") },
+      yAxis: { type: "value" as const, name: t("dashboard.yAxis.profit") },
+      series: scenarios.map((s, i) => ({
+        name: scenarioLabels[i],
         type: "line" as const,
         smooth: true,
         data: s.profit.map((p) => Number(p.profit.toFixed(1))),
       })),
     }),
-    [scenarios, years],
+    [scenarios, years, scenarioLabels, t],
   );
 
   const riskGaugeOption = useMemo(
@@ -226,13 +246,13 @@ export function ScenarioDashboardPage() {
             offsetCenter: [0, "70%"],
             formatter: "{value}",
           },
-          data: [{ value: Math.round(riskScore), name: "リスクスコア" }],
+          data: [{ value: Math.round(riskScore), name: t("dashboard.gauge.name") }],
           min: 0,
           max: 100,
         },
       ],
     }),
-    [riskScore],
+    [riskScore, t],
   );
 
   const funnelFinalRate =
@@ -251,10 +271,10 @@ export function ScenarioDashboardPage() {
 
       <div className={shared.layout}>
         <aside className={shared.controlPanel}>
-          <div className={shared.controlGroupHeader}>市場条件</div>
+          <div className={shared.controlGroupHeader}>{t("dashboard.group.market")}</div>
           <div className={shared.controlsStack}>
             <ParameterSlider
-              label="初期市場規模"
+              label={t("dashboard.control.initialMarket")}
               value={params.initialMarketSize}
               min={50}
               max={300}
@@ -262,7 +282,7 @@ export function ScenarioDashboardPage() {
               onChange={(v) => update("initialMarketSize", v)}
             />
             <ParameterSlider
-              label="市場成長率"
+              label={t("dashboard.control.marketGrowth")}
               value={params.marketGrowthRate}
               min={0}
               max={0.4}
@@ -272,10 +292,10 @@ export function ScenarioDashboardPage() {
             />
           </div>
 
-          <div className={shared.controlGroupHeader}>AI導入</div>
+          <div className={shared.controlGroupHeader}>{t("dashboard.group.ai")}</div>
           <div className={shared.controlsStack}>
             <ParameterSlider
-              label="最大AI導入率"
+              label={t("dashboard.control.maxAdoption")}
               value={params.maxAdoptionRate}
               min={0.3}
               max={1}
@@ -284,7 +304,7 @@ export function ScenarioDashboardPage() {
               formatValue={(v) => formatPercent(v, 0)}
             />
             <ParameterSlider
-              label="AI導入速度"
+              label={t("dashboard.control.adoptionSpeed")}
               value={params.adoptionSpeed}
               min={0.2}
               max={1.5}
@@ -293,7 +313,7 @@ export function ScenarioDashboardPage() {
               formatValue={(v) => v.toFixed(2)}
             />
             <ParameterSlider
-              label="AI導入加速年"
+              label={t("dashboard.control.adoptionCenter")}
               value={params.adoptionCenterYear}
               min={2025}
               max={2034}
@@ -302,10 +322,10 @@ export function ScenarioDashboardPage() {
             />
           </div>
 
-          <div className={shared.controlGroupHeader}>リスク & 運用</div>
+          <div className={shared.controlGroupHeader}>{t("dashboard.group.risk")}</div>
           <div className={shared.controlsStack}>
             <ParameterSlider
-              label="AIコスト削減率"
+              label={t("dashboard.control.aiCostReduction")}
               value={params.aiCostReduction}
               min={0}
               max={0.8}
@@ -314,7 +334,7 @@ export function ScenarioDashboardPage() {
               formatValue={(v) => formatPercent(v, 0)}
             />
             <ParameterSlider
-              label="ガバナンス対応コスト率"
+              label={t("dashboard.control.governance")}
               value={params.governanceCostRatio}
               min={0}
               max={0.4}
@@ -323,7 +343,7 @@ export function ScenarioDashboardPage() {
               formatValue={(v) => formatPercent(v, 0)}
             />
             <ParameterSlider
-              label="人材不足影響度"
+              label={t("dashboard.control.talent")}
               value={params.talentShortageImpact}
               min={0}
               max={0.5}
@@ -332,7 +352,7 @@ export function ScenarioDashboardPage() {
               formatValue={(v) => formatPercent(v, 0)}
             />
             <ParameterSlider
-              label="規制リスク"
+              label={t("dashboard.control.regulation")}
               value={params.regulationRisk}
               min={0}
               max={1}
@@ -342,10 +362,10 @@ export function ScenarioDashboardPage() {
             />
           </div>
 
-          <div className={shared.controlGroupHeader}>顧客ファネル</div>
+          <div className={shared.controlGroupHeader}>{t("dashboard.group.funnel")}</div>
           <div className={shared.controlsStack}>
             <ParameterSlider
-              label="PoC成功率"
+              label={t("dashboard.control.pocSuccess")}
               value={params.pocSuccessRate}
               min={0.2}
               max={0.95}
@@ -354,7 +374,7 @@ export function ScenarioDashboardPage() {
               formatValue={(v) => formatPercent(v, 0)}
             />
             <ParameterSlider
-              label="本番移行率"
+              label={t("dashboard.control.production")}
               value={params.productionAdoptionRate}
               min={0.2}
               max={0.95}
@@ -363,7 +383,7 @@ export function ScenarioDashboardPage() {
               formatValue={(v) => formatPercent(v, 0)}
             />
             <ParameterSlider
-              label="顧客継続率"
+              label={t("dashboard.control.retention")}
               value={params.retentionRate}
               min={0.3}
               max={0.98}
@@ -377,82 +397,81 @@ export function ScenarioDashboardPage() {
         <div className={shared.chartsStack}>
           <div className={shared.kpiRow}>
             <div className={shared.kpiCard}>
-              <span className={shared.kpiLabel}>2035年 市場規模指数</span>
-              <span className={shared.kpiValue}>{formatDecimal1(finalMarket)}</span>
-              <span className={shared.kpiNote}>標準シナリオ</span>
-            </div>
-            <div className={shared.kpiCard}>
-              <span className={shared.kpiLabel}>2035年 AI導入率</span>
-              <span className={shared.kpiValue}>{formatPercent(finalAdoption)}</span>
-              <span className={shared.kpiNote}>標準シナリオ</span>
-            </div>
-            <div className={shared.kpiCard}>
-              <span className={shared.kpiLabel}>AI活用 逆転件数</span>
-              <span className={shared.kpiValue}>
-                {crossover ? formatNumber(Math.round(crossover)) : "—"}
+              <span className={shared.kpiLabel}>
+                {t("dashboard.kpi.marketTpl").replace("{year}", String(END_YEAR))}
               </span>
-              <span className={shared.kpiNote}>件/月で AI &gt; 人手</span>
+              <span className={shared.kpiValue}>{f.decimal1(finalMarket)}</span>
+              <span className={shared.kpiNote}>{t("dashboard.kpi.baseNote")}</span>
             </div>
             <div className={shared.kpiCard}>
-              <span className={shared.kpiLabel}>最終転換率</span>
+              <span className={shared.kpiLabel}>
+                {t("dashboard.kpi.adoptionTpl").replace("{year}", String(END_YEAR))}
+              </span>
+              <span className={shared.kpiValue}>{formatPercent(finalAdoption)}</span>
+              <span className={shared.kpiNote}>{t("dashboard.kpi.baseNote")}</span>
+            </div>
+            <div className={shared.kpiCard}>
+              <span className={shared.kpiLabel}>{t("dashboard.kpi.crossover")}</span>
+              <span className={shared.kpiValue}>
+                {crossover ? f.number(Math.round(crossover)) : "—"}
+              </span>
+              <span className={shared.kpiNote}>{t("dashboard.kpi.crossover.note")}</span>
+            </div>
+            <div className={shared.kpiCard}>
+              <span className={shared.kpiLabel}>{t("dashboard.kpi.finalConversion")}</span>
               <span className={shared.kpiValue}>{formatPercent(funnelFinalRate)}</span>
-              <span className={shared.kpiNote}>問い合わせ → 拡張利用</span>
+              <span className={shared.kpiNote}>{t("dashboard.kpi.finalConversion.note")}</span>
             </div>
             <div className={shared.kpiCard}>
-              <span className={shared.kpiLabel}>総合リスクスコア</span>
+              <span className={shared.kpiLabel}>{t("dashboard.kpi.risk")}</span>
               <span className={shared.kpiValue}>{Math.round(riskScore)}</span>
-              <span className={shared.kpiNote}>0=低 / 100=高</span>
+              <span className={shared.kpiNote}>{t("dashboard.kpi.risk.note")}</span>
             </div>
           </div>
 
           <ChartCard
-            title="市場規模予測 (悲観・標準・楽観)"
-            description="市場成長率を±5ptずつずらして3シナリオを並列表示"
+            title={t("dashboard.chart.market.title")}
+            description={t("dashboard.chart.market.desc")}
           >
             <EChart option={marketOption} height={320} />
           </ChartCard>
 
           <ChartCard
-            title="AI導入率予測"
-            description="最大導入率を±10ptずつずらした3シナリオ"
+            title={t("dashboard.chart.adoption.title")}
+            description={t("dashboard.chart.adoption.desc")}
           >
             <EChart option={adoptionOption} height={320} />
           </ChartCard>
 
           <ChartCard
-            title="推定貢献度 (市場 × AI導入率 × 運用負担補正)"
-            description="シナリオごとのビジネス貢献度の推移"
+            title={t("dashboard.chart.profit.title")}
+            description={t("dashboard.chart.profit.desc")}
           >
             <EChart option={profitOption} height={320} />
           </ChartCard>
 
           <div className={shared.twoColumnGrid}>
-            <ChartCard title="総合リスクスコア" description="規制・人材・ガバナンス・継続率・PoC成功率を合成">
+            <ChartCard
+              title={t("dashboard.chart.risk.title")}
+              description={t("dashboard.chart.risk.desc")}
+            >
               <EChart option={riskGaugeOption} height={280} />
             </ChartCard>
-            <InfoBox title="成功条件コメント">
+            <InfoBox title={t("dashboard.success.title")}>
               <ul>
-                <li>PoC成功率と継続率が高いほど、リスクスコアは下がる</li>
-                <li>規制リスク・人材不足は大きいほど実行難易度が上がる</li>
-                <li>AIコスト削減率を上げると、逆転件数が小さく(有利)なる</li>
-                <li>市場成長率と最大導入率が同時に上振れると楽観シナリオに寄る</li>
+                {tList("dashboard.success.list").map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </InfoBox>
           </div>
 
-          <InfoBox title="シナリオ比較" variant="hint">
-            <p>
-              グラフの上下の幅が「楽観 − 悲観」のレンジを示し、このレンジが大きいほど将来の不確実性が高いと解釈できます。
-              標準シナリオを基準に、リスク要因 (規制・人材・ガバナンス)
-              を抑制できれば楽観側に寄せやすくなります。
-            </p>
+          <InfoBox title={t("dashboard.compare.title")} variant="hint">
+            <p>{t("dashboard.compare.body")}</p>
           </InfoBox>
 
-          <InfoBox title="前提" variant="warn">
-            <p>
-              本ダッシュボードは単純化した合成モデルで、意思決定にそのまま使える精度ではありません。
-              方向感と感度を掴むためのツールとしてご利用ください。
-            </p>
+          <InfoBox title={t("dashboard.assumptions.title")} variant="warn">
+            <p>{t("dashboard.assumptions.body")}</p>
           </InfoBox>
         </div>
       </div>

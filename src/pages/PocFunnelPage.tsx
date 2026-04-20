@@ -8,29 +8,42 @@ import { DataTable, type DataTableColumn } from "../components/common/DataTable"
 import { analyzeFunnel } from "../models/funnel";
 import { DEFAULT_POC_FUNNEL } from "../data/pocFunnel";
 import type { FunnelStageData } from "../types/scenario";
-import { formatNumber, formatPercent } from "../utils/format";
+import { formatPercent } from "../utils/format";
 import { downloadCsv } from "../utils/exportCsv";
 import { downloadDataUrl } from "../utils/downloadImage";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useFormatters } from "../i18n/useFormatters";
 import shared from "./pageShared.module.css";
 import styles from "./PocFunnelPage.module.css";
 
+const stageLabelKey = (id: string) => `funnel.stage.${id}`;
+
 export function PocFunnelPage() {
-  const { t } = useLanguage();
+  const { t, tList } = useLanguage();
+  const f = useFormatters();
   const [stages, setStages] = useState<FunnelStageData[]>(DEFAULT_POC_FUNNEL);
   const funnelRef = useRef<EChartHandle>(null);
 
-  const analysis = useMemo(() => analyzeFunnel(stages), [stages]);
+  const translatedStages = useMemo(
+    () => stages.map((s) => ({ ...s, label: t(stageLabelKey(s.id)) })),
+    [stages, t],
+  );
+
+  const analysis = useMemo(() => analyzeFunnel(translatedStages), [translatedStages]);
 
   const warnings = useMemo(() => {
     const msgs: string[] = [];
-    for (let i = 1; i < stages.length; i++) {
-      if (stages[i].count > stages[i - 1].count) {
-        msgs.push(`${stages[i].label} が前のステージ (${stages[i - 1].label}) を超えています`);
+    for (let i = 1; i < translatedStages.length; i++) {
+      if (translatedStages[i].count > translatedStages[i - 1].count) {
+        msgs.push(
+          t("funnel.warn.exceeds")
+            .replace("{stage}", translatedStages[i].label)
+            .replace("{prev}", translatedStages[i - 1].label),
+        );
       }
     }
     return msgs;
-  }, [stages]);
+  }, [translatedStages, t]);
 
   const finalConversion =
     analysis.length > 0 ? analysis[analysis.length - 1].overallRate : 0;
@@ -42,7 +55,7 @@ export function PocFunnelPage() {
         trigger: "item" as const,
         formatter: (p: unknown) => {
           const info = p as { name: string; value: number; data: { overall: string } };
-          return `${info.name}<br/>件数: <b>${formatNumber(info.value)}</b><br/>累計通過率: ${info.data.overall}`;
+          return `${info.name}<br/>${t("funnel.tooltip.count")}: <b>${f.number(info.value)}</b><br/>${t("funnel.tooltip.overall")}: ${info.data.overall}`;
         },
       },
       legend: { show: false },
@@ -66,7 +79,7 @@ export function PocFunnelPage() {
         },
       ],
     }),
-    [analysis],
+    [analysis, t, f],
   );
 
   const rateBarOption = useMemo(
@@ -87,7 +100,7 @@ export function PocFunnelPage() {
       },
       series: [
         {
-          name: "通過率",
+          name: t("common.passRate"),
           type: "bar" as const,
           data: analysis.slice(1).map((a) => Number(a.passRate.toFixed(4))),
           label: {
@@ -97,7 +110,7 @@ export function PocFunnelPage() {
           },
         },
         {
-          name: "離脱率",
+          name: t("common.dropRate"),
           type: "bar" as const,
           data: analysis.slice(1).map((a) => Number(a.dropRate.toFixed(4))),
           label: {
@@ -108,27 +121,27 @@ export function PocFunnelPage() {
         },
       ],
     }),
-    [analysis],
+    [analysis, t],
   );
 
   const tableColumns: DataTableColumn<(typeof analysis)[number]>[] = [
-    { key: "stage", header: "ステージ", render: (r) => r.stage.label },
-    { key: "count", header: "件数", align: "right", render: (r) => formatNumber(r.stage.count) },
+    { key: "stage", header: t("common.stage"), render: (r) => r.stage.label },
+    { key: "count", header: t("common.count"), align: "right", render: (r) => f.number(r.stage.count) },
     {
       key: "pass",
-      header: "通過率",
+      header: t("common.passRate"),
       align: "right",
       render: (r) => formatPercent(r.passRate),
     },
     {
       key: "drop",
-      header: "離脱率",
+      header: t("common.dropRate"),
       align: "right",
       render: (r) => formatPercent(r.dropRate),
     },
     {
       key: "overall",
-      header: "累計通過率",
+      header: t("common.overallRate"),
       align: "right",
       render: (r) => formatPercent(r.overallRate),
     },
@@ -139,11 +152,11 @@ export function PocFunnelPage() {
   const handleExportCsv = () => {
     downloadCsv(
       analysis.map((a) => ({
-        ステージ: a.stage.label,
-        件数: a.stage.count,
-        通過率: Number(a.passRate.toFixed(4)),
-        離脱率: Number(a.dropRate.toFixed(4)),
-        累計通過率: Number(a.overallRate.toFixed(4)),
+        [t("common.stage")]: a.stage.label,
+        [t("common.count")]: a.stage.count,
+        [t("common.passRate")]: Number(a.passRate.toFixed(4)),
+        [t("common.dropRate")]: Number(a.dropRate.toFixed(4)),
+        [t("common.overallRate")]: Number(a.overallRate.toFixed(4)),
       })),
       "poc-funnel.csv",
     );
@@ -155,9 +168,18 @@ export function PocFunnelPage() {
   };
 
   const updateStageCount = (index: number, value: number) => {
-    setStages((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, count: Math.max(0, Math.round(value)) } : s)),
-    );
+    const safeValue = Math.max(0, Math.round(value));
+    setStages((prev) => {
+      const next = prev.map((s) => ({ ...s }));
+      const cap = index === 0 ? safeValue : Math.min(safeValue, next[index - 1].count);
+      next[index].count = cap;
+      for (let i = index + 1; i < next.length; i++) {
+        if (next[i].count > next[i - 1].count) {
+          next[i].count = next[i - 1].count;
+        }
+      }
+      return next;
+    });
   };
 
   return (
@@ -175,15 +197,16 @@ export function PocFunnelPage() {
 
       <div className={shared.layout}>
         <aside className={shared.controlPanel}>
-          <div className={shared.controlGroupHeader}>各ステージの件数</div>
+          <div className={shared.controlGroupHeader}>{t("funnel.group.stageCounts")}</div>
           <div className={styles.stageList}>
-            {stages.map((stage, idx) => (
+            {translatedStages.map((stage, idx) => (
               <label key={stage.id} className={styles.stageField}>
                 <span className={styles.stageLabel}>{stage.label}</span>
                 <input
                   className={styles.numberInput}
                   type="number"
                   min={0}
+                  max={idx === 0 ? undefined : translatedStages[idx - 1].count}
                   value={stage.count}
                   onChange={(e) => updateStageCount(idx, Number(e.target.value))}
                 />
@@ -202,65 +225,60 @@ export function PocFunnelPage() {
         <div className={shared.chartsStack}>
           <div className={shared.kpiRow}>
             <div className={shared.kpiCard}>
-              <span className={shared.kpiLabel}>最終転換率</span>
+              <span className={shared.kpiLabel}>{t("funnel.kpi.finalConversion")}</span>
               <span className={shared.kpiValue}>{formatPercent(finalConversion)}</span>
-              <span className={shared.kpiNote}>問い合わせ → 拡張利用</span>
+              <span className={shared.kpiNote}>{t("funnel.kpi.finalConversion.note")}</span>
             </div>
             <div className={shared.kpiCard}>
-              <span className={shared.kpiLabel}>問い合わせ件数</span>
+              <span className={shared.kpiLabel}>{t("funnel.kpi.inquiryCount")}</span>
               <span className={shared.kpiValue}>
-                {formatNumber(stages[0]?.count ?? 0)}
+                {f.number(stages[0]?.count ?? 0)}
               </span>
-              <span className={shared.kpiNote}>ファネル起点</span>
+              <span className={shared.kpiNote}>{t("funnel.kpi.inquiryCount.note")}</span>
             </div>
             <div className={shared.kpiCard}>
-              <span className={shared.kpiLabel}>拡張利用件数</span>
+              <span className={shared.kpiLabel}>{t("funnel.kpi.expansionCount")}</span>
               <span className={shared.kpiValue}>
-                {formatNumber(stages[stages.length - 1]?.count ?? 0)}
+                {f.number(stages[stages.length - 1]?.count ?? 0)}
               </span>
-              <span className={shared.kpiNote}>最終ステージ</span>
+              <span className={shared.kpiNote}>{t("funnel.kpi.expansionCount.note")}</span>
             </div>
           </div>
 
           <ChartCard
-            title="案件ファネル"
-            description="各ステージの件数と累計通過率"
-            footerNote="累計通過率 = 当該ステージ件数 / 問い合わせ件数"
+            title={t("funnel.chart.funnel.title")}
+            description={t("funnel.chart.funnel.desc")}
+            footerNote={t("funnel.chart.funnel.footer")}
           >
             <EChart ref={funnelRef} option={funnelOption} height={380} />
           </ChartCard>
 
           <ChartCard
-            title="ステージ別 通過率と離脱率"
-            description="直前ステージからの遷移率を表示"
+            title={t("funnel.chart.rates.title")}
+            description={t("funnel.chart.rates.desc")}
           >
             <EChart option={rateBarOption} height={320} />
           </ChartCard>
 
-          <ChartCard title="ステージ別サマリー">
+          <ChartCard title={t("funnel.chart.summary.title")}>
             <DataTable columns={tableColumns} rows={analysis} />
           </ChartCard>
 
           <div className={shared.twoColumnGrid}>
-            <InfoBox title="分析コメント">
-              <p>
-                PoC開始までは進んでも、本番導入や継続利用に進む案件は大きく減少します。
-                AI解析サービスでは、技術検証だけでなく業務実装、データ整備、運用体制が重要になります。
-              </p>
+            <InfoBox title={t("market.comment.title")}>
+              <p>{t("funnel.comment.body")}</p>
             </InfoBox>
-            <InfoBox title="読み取り方" variant="hint">
+            <InfoBox title={t("market.read.title")} variant="hint">
               <ul>
-                <li>大きな段差があるステージが改善機会</li>
-                <li>PoC成功 → 本番導入の段差は業務実装・体制依存であることが多い</li>
-                <li>拡張利用の増減は顧客満足・効果実証の指標</li>
+                {tList("funnel.read.list").map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </InfoBox>
           </div>
 
-          <InfoBox title="前提" variant="warn">
-            <p>
-              本ファネルはサンプル値であり、自社実データに差し替えることで現実的な示唆が得られます。
-            </p>
+          <InfoBox title={t("dashboard.assumptions.title")} variant="warn">
+            <p>{t("funnel.assumptions.body")}</p>
           </InfoBox>
         </div>
       </div>

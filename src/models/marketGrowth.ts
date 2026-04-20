@@ -24,11 +24,11 @@ export function calculateMarketGrowth(params: MarketGrowthParams): MarketGrowthP
 
 export function calculateMultiScenarioGrowth(
   baseParams: Omit<MarketGrowthParams, "growthRate">,
-  scenarios: { id: string; label: string; growthRate: number }[],
+  scenarios: { id: string; labelKey: string; growthRate: number }[],
 ) {
   return scenarios.map((s) => ({
     id: s.id,
-    label: s.label,
+    labelKey: s.labelKey,
     growthRate: s.growthRate,
     series: calculateMarketGrowth({ ...baseParams, growthRate: s.growthRate }),
   }));

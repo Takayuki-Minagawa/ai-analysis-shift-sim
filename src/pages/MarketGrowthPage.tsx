@@ -11,10 +11,11 @@ import {
   DEFAULT_MARKET_SCENARIOS,
 } from "../data/marketScenarios";
 import { calculateMultiScenarioGrowth } from "../models/marketGrowth";
-import { formatDecimal1, formatPercent } from "../utils/format";
+import { formatPercent } from "../utils/format";
 import { downloadCsv } from "../utils/exportCsv";
 import { downloadDataUrl } from "../utils/downloadImage";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useFormatters } from "../i18n/useFormatters";
 import shared from "./pageShared.module.css";
 
 type ScenarioInput = {
@@ -38,7 +39,8 @@ const DEFAULT_INPUT: ScenarioInput = {
 const SCENARIO_COLORS = ["#17a673", "#1f6feb", "#ff8a3d"];
 
 export function MarketGrowthPage() {
-  const { t } = useLanguage();
+  const { t, tList } = useLanguage();
+  const f = useFormatters();
   const [input, setInput] = useState<ScenarioInput>(DEFAULT_INPUT);
   const trendChartRef = useRef<EChartHandle>(null);
   const finalChartRef = useRef<EChartHandle>(null);
@@ -52,9 +54,9 @@ export function MarketGrowthPage() {
           endYear: input.endYear,
         },
         [
-          { id: "conservative", label: "Conservative", growthRate: input.conservativeRate },
-          { id: "base", label: "Base", growthRate: input.baseRate },
-          { id: "aggressive", label: "Aggressive", growthRate: input.aggressiveRate },
+          { id: "conservative", labelKey: "market.scenario.conservative", growthRate: input.conservativeRate },
+          { id: "base", labelKey: "market.scenario.base", growthRate: input.baseRate },
+          { id: "aggressive", labelKey: "market.scenario.aggressive", growthRate: input.aggressiveRate },
         ],
       ),
     [input],
@@ -70,23 +72,23 @@ export function MarketGrowthPage() {
       color: SCENARIO_COLORS,
       tooltip: {
         trigger: "axis" as const,
-        valueFormatter: (value: number) => `${formatDecimal1(Number(value))}`,
+        valueFormatter: (value: number) => `${f.decimal1(Number(value))}`,
       },
       legend: { top: 0 },
       grid: { top: 40, left: 56, right: 24, bottom: 40 },
       xAxis: {
         type: "category" as const,
-        name: "年",
+        name: t("common.year"),
         nameLocation: "middle" as const,
         nameGap: 28,
         data: years,
       },
       yAxis: {
         type: "value" as const,
-        name: "市場規模指数 (初年=100基準)",
+        name: t("market.yAxis.index"),
       },
       series: scenarios.map((s) => ({
-        name: `${s.label} (${formatPercent(s.growthRate, 0)})`,
+        name: `${t(s.labelKey)} (${formatPercent(s.growthRate, 0)})`,
         type: "line" as const,
         smooth: true,
         lineStyle: { width: 3 },
@@ -94,14 +96,14 @@ export function MarketGrowthPage() {
         data: s.series.map((p) => Number(p.marketSize.toFixed(2))),
       })),
     }),
-    [scenarios, years],
+    [scenarios, years, t, f],
   );
 
   const finalOption = useMemo(() => {
     const finalPoints = scenarios.map((s) => {
       const lastPoint = s.series[s.series.length - 1];
       return {
-        label: s.label,
+        label: t(s.labelKey),
         value: lastPoint ? Number(lastPoint.marketSize.toFixed(1)) : 0,
       };
     });
@@ -115,7 +117,7 @@ export function MarketGrowthPage() {
       },
       yAxis: {
         type: "value" as const,
-        name: `${input.endYear}年 市場規模指数`,
+        name: t("market.yAxis.finalTpl").replace("{year}", String(input.endYear)),
       },
       series: [
         {
@@ -128,20 +130,20 @@ export function MarketGrowthPage() {
           label: {
             show: true,
             position: "top" as const,
-            formatter: (params: { value: number }) => formatDecimal1(params.value),
+            formatter: (params: { value: number }) => f.decimal1(params.value),
           },
         },
       ],
     };
-  }, [scenarios, input.endYear]);
+  }, [scenarios, input.endYear, t, f]);
 
   const tableColumns: DataTableColumn<{ year: number; values: number[] }>[] = [
-    { key: "year", header: "年", render: (row) => row.year },
+    { key: "year", header: t("common.year"), render: (row) => row.year },
     ...scenarios.map((s, i) => ({
       key: s.id,
-      header: s.label,
+      header: t(s.labelKey),
       align: "right" as const,
-      render: (row: { year: number; values: number[] }) => formatDecimal1(row.values[i]),
+      render: (row: { year: number; values: number[] }) => f.decimal1(row.values[i]),
     })),
   ];
 
@@ -154,9 +156,9 @@ export function MarketGrowthPage() {
 
   const handleExportCsv = () => {
     const rows = years.map((year, idx) => {
-      const row: Record<string, string | number> = { 年: year };
+      const row: Record<string, string | number> = { [t("common.year")]: year };
       scenarios.forEach((s) => {
-        row[s.label] = Number(s.series[idx].marketSize.toFixed(2));
+        row[t(s.labelKey)] = Number(s.series[idx].marketSize.toFixed(2));
       });
       return row;
     });
@@ -186,20 +188,20 @@ export function MarketGrowthPage() {
       </PageTitle>
 
       <div className={shared.layout}>
-        <aside className={shared.controlPanel} aria-label="シミュレーションパラメータ">
-          <div className={shared.controlGroupHeader}>市場条件</div>
+        <aside className={shared.controlPanel} aria-label={t("market.aside.aria")}>
+          <div className={shared.controlGroupHeader}>{t("market.group.conditions")}</div>
           <div className={shared.controlsStack}>
             <ParameterSlider
-              label="初期市場規模 (指数)"
+              label={t("market.control.initialSize")}
               value={input.initialMarketSize}
               min={50}
               max={500}
               step={10}
               onChange={(v) => update("initialMarketSize", v)}
-              description="開始年の市場規模を指数(例:100=基準値)として設定"
+              description={t("market.control.initialSize.desc")}
             />
             <ParameterSlider
-              label="開始年"
+              label={t("market.control.startYear")}
               value={input.startYear}
               min={2020}
               max={2030}
@@ -207,7 +209,7 @@ export function MarketGrowthPage() {
               onChange={(v) => update("startYear", Math.min(v, input.endYear - 1))}
             />
             <ParameterSlider
-              label="終了年"
+              label={t("market.control.endYear")}
               value={input.endYear}
               min={2026}
               max={2040}
@@ -216,97 +218,89 @@ export function MarketGrowthPage() {
             />
           </div>
 
-          <div className={shared.controlGroupHeader}>シナリオ別 成長率</div>
+          <div className={shared.controlGroupHeader}>{t("market.group.scenarios")}</div>
           <div className={shared.controlsStack}>
             <ParameterSlider
-              label="Conservative 成長率"
+              label={t("market.control.conservativeRate")}
               value={input.conservativeRate}
               min={0}
               max={0.3}
               step={0.01}
               onChange={(v) => update("conservativeRate", v)}
               formatValue={(v) => formatPercent(v, 0)}
-              description="規制・人材不足により緩やかに成長するケース"
+              description={t("market.scenario.conservative.desc")}
             />
             <ParameterSlider
-              label="Base 成長率"
+              label={t("market.control.baseRate")}
               value={input.baseRate}
               min={0}
               max={0.4}
               step={0.01}
               onChange={(v) => update("baseRate", v)}
               formatValue={(v) => formatPercent(v, 0)}
-              description="AI活用が一般化し安定成長するケース"
+              description={t("market.scenario.base.desc")}
             />
             <ParameterSlider
-              label="Aggressive 成長率"
+              label={t("market.control.aggressiveRate")}
               value={input.aggressiveRate}
               min={0}
               max={0.5}
               step={0.01}
               onChange={(v) => update("aggressiveRate", v)}
               formatValue={(v) => formatPercent(v, 0)}
-              description="AIエージェントと自動化が急速に普及するケース"
+              description={t("market.scenario.aggressive.desc")}
             />
           </div>
         </aside>
 
         <div className={shared.chartsStack}>
           <ChartCard
-            title="シナリオ別 市場規模推移"
-            description="複利成長を前提とした3シナリオの年次推移。Y軸は開始年を100とした指数。"
-            footerNote="注: 成長率は年率。シナリオ間で数%の差でも長期ではスプレッドが大きく開きます。"
+            title={t("market.trend.title")}
+            description={t("market.trend.desc")}
+            footerNote={t("market.trend.footer")}
           >
             <EChart
               ref={trendChartRef}
               option={trendOption}
               height={380}
-              ariaLabel="シナリオ別市場規模推移 折れ線グラフ"
+              ariaLabel={t("market.trend.aria")}
             />
           </ChartCard>
 
           <ChartCard
-            title={`${input.endYear}年時点 シナリオ別市場規模`}
-            description="各シナリオの最終年の市場規模指数を比較"
+            title={t("market.final.titleTpl").replace("{year}", String(input.endYear))}
+            description={t("market.final.desc")}
           >
             <EChart
               ref={finalChartRef}
               option={finalOption}
               height={280}
-              ariaLabel="終了年時点の市場規模比較 棒グラフ"
+              ariaLabel={t("market.final.aria")}
             />
           </ChartCard>
 
           <ChartCard
-            title="年別市場規模テーブル"
-            description="数値データを確認・エクスポートするためのテーブル"
+            title={t("market.table.title")}
+            description={t("market.table.desc")}
           >
             <DataTable columns={tableColumns} rows={tableRows} maxHeight={360} />
           </ChartCard>
 
           <div className={shared.twoColumnGrid}>
-            <InfoBox title="分析コメント">
-              <p>
-                Aggressive
-                シナリオでは、成長率の複利効果により最終年の市場規模がBaseを大きく上回ります。
-                AI解析サービス市場は、導入率の上昇とともに線形ではなく加速的に成長する可能性があります。
-              </p>
+            <InfoBox title={t("market.comment.title")}>
+              <p>{t("market.comment.body")}</p>
             </InfoBox>
-            <InfoBox title="読み取り方" variant="hint">
+            <InfoBox title={t("market.read.title")} variant="hint">
               <ul>
-                <li>Y軸は初期年を基準(=初期市場規模)とした相対指数</li>
-                <li>成長率の差は短期では小さく見えても、10年後には大きな差になります</li>
-                <li>Conservative と Aggressive の開きが、シナリオ不確実性の幅を示す</li>
+                {tList("market.read.list").map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </InfoBox>
           </div>
 
-          <InfoBox title="前提条件とサンプルデータ" variant="warn">
-            <p>
-              本ページの市場規模は、実データではなくサンプル入力です。
-              モデルは単純な複利成長 <code>marketSize = initial * (1 + g)^t</code>{" "}
-              に基づいており、飽和、景気変動、政策影響は織り込んでいません。
-            </p>
+          <InfoBox title={t("market.assumptions.title")} variant="warn">
+            <p>{t("market.assumptions.body")}</p>
           </InfoBox>
         </div>
       </div>

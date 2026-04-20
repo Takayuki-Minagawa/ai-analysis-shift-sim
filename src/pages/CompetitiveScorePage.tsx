@@ -18,9 +18,10 @@ import { useLanguage } from "../i18n/LanguageContext";
 import shared from "./pageShared.module.css";
 
 const COMPANY_COLORS = ["#1f6feb", "#ff8a3d", "#17a673", "#8e44ad", "#d97706"];
+const axisKey = (k: string) => `axis.competitive.${k}`;
 
 export function CompetitiveScorePage() {
-  const { t } = useLanguage();
+  const { t, tList } = useLanguage();
   const radarRef = useRef<EChartHandle>(null);
 
   const totals = useMemo(
@@ -37,22 +38,22 @@ export function CompetitiveScorePage() {
     () => ({
       tooltip: { trigger: "axis" as const, axisPointer: { type: "shadow" as const } },
       grid: { top: 20, left: 120, right: 40, bottom: 30 },
-      xAxis: { type: "value" as const, name: "総合スコア (合計点)" },
+      xAxis: { type: "value" as const, name: t("competitive.total.xAxis") },
       yAxis: {
         type: "category" as const,
-        data: totals.map((t) => `${t.company.name} - ${t.company.type}`).reverse(),
+        data: totals.map((x) => `${x.company.name} - ${t(x.company.typeKey)}`).reverse(),
         axisLabel: { fontSize: 11 },
       },
       series: [
         {
           type: "bar" as const,
-          data: totals.map((t) => ({ value: t.total, itemStyle: { color: t.color } })).reverse(),
+          data: totals.map((x) => ({ value: x.total, itemStyle: { color: x.color } })).reverse(),
           label: { show: true, position: "right" as const },
           barMaxWidth: 20,
         },
       ],
     }),
-    [totals],
+    [totals, t],
   );
 
   const radarOption = useMemo(
@@ -61,7 +62,7 @@ export function CompetitiveScorePage() {
       tooltip: { trigger: "item" as const },
       legend: { top: 0, type: "scroll" as const },
       radar: {
-        indicator: COMPETITIVE_AXES.map((a) => ({ name: a.label, max: 5 })),
+        indicator: COMPETITIVE_AXES.map((a) => ({ name: t(axisKey(a.key)), max: 5 })),
         shape: "polygon" as const,
         radius: "65%",
         splitArea: { areaStyle: { color: ["#f8fbff", "#ffffff"] } },
@@ -78,7 +79,7 @@ export function CompetitiveScorePage() {
         },
       ],
     }),
-    [],
+    [t],
   );
 
   const groupedBarOption = useMemo(
@@ -89,31 +90,31 @@ export function CompetitiveScorePage() {
       grid: { top: 40, left: 56, right: 30, bottom: 60 },
       xAxis: {
         type: "category" as const,
-        data: COMPETITIVE_AXES.map((a) => a.label),
+        data: COMPETITIVE_AXES.map((a) => t(axisKey(a.key))),
         axisLabel: { rotate: 25 },
       },
-      yAxis: { type: "value" as const, max: 5, name: "スコア" },
+      yAxis: { type: "value" as const, max: 5, name: t("common.score") },
       series: COMPANY_SCORES.map((c) => ({
         name: c.name,
         type: "bar" as const,
         data: COMPETITIVE_AXES.map((a) => c[a.key]),
       })),
     }),
-    [],
+    [t],
   );
 
   const tableColumns: DataTableColumn<CompanyScore>[] = [
-    { key: "name", header: "企業", render: (r) => r.name },
-    { key: "type", header: "タイプ", render: (r) => r.type },
+    { key: "name", header: t("common.company"), render: (r) => r.name },
+    { key: "type", header: t("common.type"), render: (r) => t(r.typeKey) },
     ...COMPETITIVE_AXES.map((a) => ({
       key: a.key,
-      header: a.label,
+      header: t(axisKey(a.key)),
       align: "right" as const,
       render: (r: CompanyScore) => r[a.key],
     })),
     {
       key: "total",
-      header: "合計",
+      header: t("common.total"),
       align: "right" as const,
       render: (r: CompanyScore) => calculateCompanyTotal(r),
     },
@@ -122,13 +123,13 @@ export function CompetitiveScorePage() {
   const handleExportCsv = () => {
     const rows = COMPANY_SCORES.map((c) => {
       const row: Record<string, string | number> = {
-        企業: c.name,
-        タイプ: c.type,
+        [t("common.company")]: c.name,
+        [t("common.type")]: t(c.typeKey),
       };
       COMPETITIVE_AXES.forEach((a) => {
-        row[a.label] = c[a.key];
+        row[t(axisKey(a.key))] = c[a.key];
       });
-      row["合計"] = calculateCompanyTotal(c);
+      row[t("common.total")] = calculateCompanyTotal(c);
       return row;
     });
     downloadCsv(rows, "competitive-score.csv");
@@ -149,23 +150,23 @@ export function CompetitiveScorePage() {
       </PageTitle>
 
       <div className={shared.chartsStack}>
-        <ChartCard title="企業別 総合スコア" description="8軸の合計点で相対比較">
+        <ChartCard title={t("competitive.total.title")} description={t("competitive.total.desc")}>
           <EChart option={totalOption} height={320} />
         </ChartCard>
 
         <ChartCard
-          title="競争力レーダーチャート"
-          description="企業ごとの強み弱みプロファイルを重ね合わせ"
-          footerNote="レーダーの形が広いほど全方位に強く、尖っているほど特化型。"
+          title={t("competitive.radar.title")}
+          description={t("competitive.radar.desc")}
+          footerNote={t("competitive.radar.footer")}
         >
           <EChart ref={radarRef} option={radarOption} height={420} />
         </ChartCard>
 
-        <ChartCard title="評価軸別 グループ比較" description="各軸での企業間の相対差を確認">
+        <ChartCard title={t("competitive.grouped.title")} description={t("competitive.grouped.desc")}>
           <EChart option={groupedBarOption} height={360} />
         </ChartCard>
 
-        <ChartCard title="強み / 弱みサマリー">
+        <ChartCard title={t("competitive.strengths.title")}>
           <div style={{ display: "grid", gap: 12 }}>
             {COMPANY_SCORES.map((c) => {
               const { strengths, weaknesses } = getStrengthsAndWeaknesses(c);
@@ -180,16 +181,18 @@ export function CompetitiveScorePage() {
                   }}
                 >
                   <div style={{ fontWeight: 700 }}>
-                    {c.name} — <span style={{ color: "var(--color-text-muted)" }}>{c.type}</span>
+                    {c.name} — <span style={{ color: "var(--color-text-muted)" }}>{t(c.typeKey)}</span>
                   </div>
                   <div style={{ fontSize: 12, marginTop: 4 }}>
-                    <span style={{ color: "var(--color-success)", fontWeight: 600 }}>強み:</span>{" "}
-                    {strengths.map((s) => `${s.label}(${s.score})`).join(" / ")}
+                    <span style={{ color: "var(--color-success)", fontWeight: 600 }}>
+                      {t("competitive.strengths.label")}
+                    </span>{" "}
+                    {strengths.map((s) => `${t(axisKey(s.key))}(${s.score})`).join(" / ")}
                     {"  "}
                     <span style={{ color: "var(--color-warn)", fontWeight: 600, marginLeft: 8 }}>
-                      弱み:
+                      {t("competitive.weaknesses.label")}
                     </span>{" "}
-                    {weaknesses.map((w) => `${w.label}(${w.score})`).join(" / ")}
+                    {weaknesses.map((w) => `${t(axisKey(w.key))}(${w.score})`).join(" / ")}
                   </div>
                 </div>
               );
@@ -197,30 +200,25 @@ export function CompetitiveScorePage() {
           </div>
         </ChartCard>
 
-        <ChartCard title="スコアテーブル">
+        <ChartCard title={t("competitive.table.title")}>
           <DataTable columns={tableColumns} rows={COMPANY_SCORES} />
         </ChartCard>
 
         <div className={shared.twoColumnGrid}>
-          <InfoBox title="分析コメント">
-            <p>
-              汎用AI分析プラットフォームはコスト効率や汎用性で強みがあります。
-              一方で、規制産業や専門業界では、業界知識、説明可能性、セキュリティが競争力を左右します。
-            </p>
+          <InfoBox title={t("market.comment.title")}>
+            <p>{t("competitive.comment.body")}</p>
           </InfoBox>
-          <InfoBox title="読み取り方" variant="hint">
+          <InfoBox title={t("market.read.title")} variant="hint">
             <ul>
-              <li>合計スコアが高い = 総合力が強い (ただし特化型の価値は総合点で測れない)</li>
-              <li>レーダーの形: 円に近い = バランス型 / 尖り = 特化型</li>
-              <li>同一軸で全社低い場合、業界共通の構造的課題</li>
+              {tList("competitive.read.list").map((item) => (
+                <li key={item}>{item}</li>
+              ))}
             </ul>
           </InfoBox>
         </div>
 
-        <InfoBox title="前提" variant="warn">
-          <p>
-            本企業データは架空の比較用サンプルです。実企業のスコアとは無関係であり、戦略判断には実調査が必要です。
-          </p>
+        <InfoBox title={t("dashboard.assumptions.title")} variant="warn">
+          <p>{t("competitive.assumptions.body")}</p>
         </InfoBox>
       </div>
     </>

@@ -8,11 +8,13 @@ export type AdoptionCurveParams = {
   endYear: number;
 };
 
+export type AdoptionPhase = "early" | "growth" | "mature";
+
 export type AdoptionCurvePoint = {
   year: number;
   adoptionRate: number;
   adoptionRatePercent: number;
-  phase: "初期" | "成長期" | "成熟期";
+  phase: AdoptionPhase;
 };
 
 export function calculateAdoptionCurve(params: AdoptionCurveParams): AdoptionCurvePoint[] {
@@ -21,10 +23,10 @@ export function calculateAdoptionCurve(params: AdoptionCurveParams): AdoptionCur
   if (endYear < startYear) return results;
   for (let year = startYear; year <= endYear; year++) {
     const adoptionRate = logistic(year, maxAdoptionRate, speed, centerYear);
-    const ratio = adoptionRate / maxAdoptionRate;
-    let phase: AdoptionCurvePoint["phase"] = "成長期";
-    if (ratio < 0.2) phase = "初期";
-    else if (ratio > 0.8) phase = "成熟期";
+    const ratio = maxAdoptionRate === 0 ? 0 : adoptionRate / maxAdoptionRate;
+    let phase: AdoptionPhase = "growth";
+    if (ratio < 0.2) phase = "early";
+    else if (ratio > 0.8) phase = "mature";
     results.push({
       year,
       adoptionRate,

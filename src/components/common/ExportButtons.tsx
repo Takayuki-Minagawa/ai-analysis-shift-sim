@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageContext";
 import styles from "./ExportButtons.module.css";
 
 type Props = {
@@ -7,21 +8,22 @@ type Props = {
 };
 
 export function ExportButtons({ onExportCsv, onExportPng, onReset }: Props) {
+  const { t } = useLanguage();
   return (
     <div className={styles.wrapper}>
       {onReset ? (
         <button type="button" className={styles.buttonGhost} onClick={onReset}>
-          リセット
+          {t("common.reset")}
         </button>
       ) : null}
       {onExportCsv ? (
         <button type="button" className={styles.button} onClick={onExportCsv}>
-          CSV
+          {t("common.csv")}
         </button>
       ) : null}
       {onExportPng ? (
         <button type="button" className={styles.button} onClick={onExportPng}>
-          PNG
+          {t("common.png")}
         </button>
       ) : null}
     </div>

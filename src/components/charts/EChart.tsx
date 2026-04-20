@@ -1,6 +1,9 @@
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import ReactECharts from "echarts-for-react";
 import { useTheme } from "../../theme/ThemeContext";
+import { registerEchartsThemes } from "../../theme/echartsTheme";
+
+registerEchartsThemes();
 
 export type EChartHandle = {
   getDataUrl: () => string | undefined;

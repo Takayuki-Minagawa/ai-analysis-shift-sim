@@ -164,7 +164,7 @@ npm run preview
 │   ├── types/                 共通の型定義
 │   ├── utils/                 フォーマッタ / CSV 出力 / 画像保存 / 数式
 │   ├── styles/                CSS 変数 (ライト / ダーク) とグローバルスタイル
-│   ├── main.tsx               エントリーポイント (Provider / ECharts テーマ登録)
+│   ├── main.tsx               エントリーポイント (Theme / Language Provider)
 │   └── vite-env.d.ts
 ├── tests/                     Vitest テスト (モデル関数)
 ├── index.html
@@ -224,6 +224,9 @@ passRate(i)    = stage(i).count / stage(i-1).count
 overallRate(i) = stage(i).count / stage(0).count
 ```
 
+入力側では件数が単調非増加となるようカスケード補正 (`sanitizeFunnelCounts`) を行い、
+表示側でも `analyzeFunnel` が通過率・離脱率・全体通過率を `[0, 1]` にクランプします。
+
 ### 業界スコア / 競争力スコア
 
 1〜5 点の定性スコアを複数軸で保持し、合計・ヒートマップ・レーダーで相対比較します。
@@ -249,8 +252,11 @@ overallRate(i) = stage(i).count / stage(0).count
 - ヘッダーの言語トグルボタンで切替 (既定: 日本語)
 - 選択は `localStorage` (キー: `app:lang`) に保存され、`<html lang>` 属性も更新
 - 翻訳辞書は `src/i18n/translations.ts` に集約し、`useLanguage().t(key)` で参照
-- 主要 UI (ヘッダー / サイドバー / フッター / ページタイトル / ホーム / 簡易マニュアル)
-  を両言語で表示
+- UI 全体 (ヘッダー / サイドバー / フッター / ホーム / 各分析ページのコントロール・
+  グラフタイトル・凡例・KPI・本文テキスト / 簡易マニュアル / 前提条件ページ) を
+  両言語で表示
+- 数値・通貨も言語に追従 (`src/i18n/useFormatters.ts`)。日本語では `億円/万円/円`、
+  英語では `Intl.NumberFormat` の compact 表記 (`¥1.2M` など) に切り替わる
 
 ### 翻訳の追加 / 修正
 
@@ -277,6 +283,8 @@ npm run test:watch   # watch モード
 - 処理件数が増加するほど平均コストが低下する
 - 損益分岐点の公式 (固定費 / 限界利益) と一致する
 - 無効な入力 (step = 0、終了年 < 開始年) で空配列を返す
+- ファネルの通過率・離脱率・全体通過率が `[0, 1]` にクランプされる
+- `sanitizeFunnelCounts` が後段の件数を前段以下に丸め、負値を 0 に補正する
 
 ---
 

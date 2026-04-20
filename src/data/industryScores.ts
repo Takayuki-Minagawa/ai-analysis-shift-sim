@@ -2,6 +2,7 @@ import type { IndustryScore } from "../types/analysis";
 
 export const INDUSTRY_SCORES: IndustryScore[] = [
   {
+    id: "manufacturing",
     industry: "製造",
     dataVolume: 5,
     automationPotential: 5,
@@ -11,6 +12,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 4,
   },
   {
+    id: "finance",
     industry: "金融",
     dataVolume: 5,
     automationPotential: 4,
@@ -20,6 +22,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 4,
   },
   {
+    id: "healthcare",
     industry: "医療",
     dataVolume: 4,
     automationPotential: 4,
@@ -29,6 +32,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 5,
   },
   {
+    id: "retail",
     industry: "小売",
     dataVolume: 4,
     automationPotential: 4,
@@ -38,6 +42,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 4,
   },
   {
+    id: "logistics",
     industry: "物流",
     dataVolume: 4,
     automationPotential: 5,
@@ -47,6 +52,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 4,
   },
   {
+    id: "realEstate",
     industry: "不動産",
     dataVolume: 3,
     automationPotential: 3,
@@ -56,6 +62,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 3,
   },
   {
+    id: "education",
     industry: "教育",
     dataVolume: 3,
     automationPotential: 3,
@@ -65,6 +72,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 4,
   },
   {
+    id: "government",
     industry: "行政",
     dataVolume: 4,
     automationPotential: 3,
@@ -74,6 +82,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 3,
   },
   {
+    id: "energy",
     industry: "エネルギー",
     dataVolume: 4,
     automationPotential: 4,
@@ -83,6 +92,7 @@ export const INDUSTRY_SCORES: IndustryScore[] = [
     marketGrowth: 4,
   },
   {
+    id: "marketing",
     industry: "マーケティング",
     dataVolume: 5,
     automationPotential: 5,

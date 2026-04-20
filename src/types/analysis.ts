@@ -7,6 +7,7 @@ export type IndustryAxisKey =
   | "marketGrowth";
 
 export type IndustryScore = {
+  id: string;
   industry: string;
   dataVolume: number;
   automationPotential: number;
@@ -30,6 +31,7 @@ export type CompanyScore = {
   id: string;
   name: string;
   type: string;
+  typeKey: string;
   domainKnowledge: number;
   dataAccess: number;
   modelQuality: number;

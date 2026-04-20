@@ -13,11 +13,23 @@ import { downloadDataUrl } from "../utils/downloadImage";
 import { useLanguage } from "../i18n/LanguageContext";
 import shared from "./pageShared.module.css";
 
+const industryKey = (id: string) => `industry.${id}`;
+const axisKey = (k: string) => `axis.industry.${k}`;
+
 export function IndustryDemandPage() {
-  const { t } = useLanguage();
+  const { t, tList } = useLanguage();
   const heatmapRef = useRef<EChartHandle>(null);
 
   const sorted = useMemo(() => sortByTotalScore(INDUSTRY_SCORES), []);
+
+  const axisLabels = useMemo(
+    () => INDUSTRY_AXES.map((a) => t(axisKey(a.key))),
+    [t],
+  );
+  const industryLabels = useMemo(
+    () => sorted.map((s) => t(industryKey(s.id))),
+    [sorted, t],
+  );
 
   const heatmapData = useMemo(() => {
     const data: [number, number, number][] = [];
@@ -35,21 +47,19 @@ export function IndustryDemandPage() {
         position: "top" as const,
         formatter: (p: unknown) => {
           const info = p as { data: [number, number, number] };
-          const axis = INDUSTRY_AXES[info.data[0]];
-          const industry = sorted[info.data[1]];
-          return `${industry.industry} × ${axis.label}<br/>スコア: <b>${info.data[2]}</b>`;
+          return `${industryLabels[info.data[1]]} × ${axisLabels[info.data[0]]}<br/>${t("common.score")}: <b>${info.data[2]}</b>`;
         },
       },
       grid: { top: 40, left: 100, right: 30, bottom: 60 },
       xAxis: {
         type: "category" as const,
-        data: INDUSTRY_AXES.map((a) => a.label),
+        data: axisLabels,
         axisLabel: { interval: 0, rotate: 20 },
         splitArea: { show: true },
       },
       yAxis: {
         type: "category" as const,
-        data: sorted.map((s) => s.industry),
+        data: industryLabels,
         splitArea: { show: true },
       },
       visualMap: {
@@ -63,7 +73,7 @@ export function IndustryDemandPage() {
       },
       series: [
         {
-          name: "スコア",
+          name: t("common.score"),
           type: "heatmap" as const,
           data: heatmapData,
           label: { show: true, color: "#0f172a", fontWeight: 600 },
@@ -73,7 +83,7 @@ export function IndustryDemandPage() {
         },
       ],
     }),
-    [heatmapData, sorted],
+    [heatmapData, axisLabels, industryLabels, t],
   );
 
   const totalOption = useMemo(
@@ -81,10 +91,10 @@ export function IndustryDemandPage() {
       color: ["#1f6feb"],
       tooltip: { trigger: "axis" as const, axisPointer: { type: "shadow" as const } },
       grid: { top: 20, left: 100, right: 40, bottom: 30 },
-      xAxis: { type: "value" as const, name: "総合スコア" },
+      xAxis: { type: "value" as const, name: t("industry.total.xAxis") },
       yAxis: {
         type: "category" as const,
-        data: sorted.map((s) => s.industry).reverse(),
+        data: industryLabels.slice().reverse(),
       },
       series: [
         {
@@ -95,7 +105,7 @@ export function IndustryDemandPage() {
         },
       ],
     }),
-    [sorted],
+    [sorted, industryLabels, t],
   );
 
   const scatterOption = useMemo(
@@ -104,13 +114,16 @@ export function IndustryDemandPage() {
         trigger: "item" as const,
         formatter: (p: unknown) => {
           const info = p as { data: [number, number, string] };
-          return `${info.data[2]}<br/>規制リスク: ${info.data[0]} / ROI: ${info.data[1]}`;
+          return t("industry.scatter.tooltipTpl")
+            .replace("{name}", info.data[2])
+            .replace("{x}", String(info.data[0]))
+            .replace("{y}", String(info.data[1]));
         },
       },
       grid: { top: 30, left: 56, right: 30, bottom: 50 },
       xAxis: {
         type: "value" as const,
-        name: "規制リスク",
+        name: t("industry.scatter.xAxis"),
         min: 0,
         max: 6,
         nameLocation: "middle" as const,
@@ -118,7 +131,7 @@ export function IndustryDemandPage() {
       },
       yAxis: {
         type: "value" as const,
-        name: "ROI Potential",
+        name: t("industry.scatter.yAxis"),
         min: 0,
         max: 6,
       },
@@ -127,7 +140,11 @@ export function IndustryDemandPage() {
           type: "scatter" as const,
           symbolSize: 22,
           itemStyle: { color: "#ff8a3d", opacity: 0.85 },
-          data: INDUSTRY_SCORES.map((s) => [s.regulationRisk, s.roiPotential, s.industry]),
+          data: INDUSTRY_SCORES.map((s) => [
+            s.regulationRisk,
+            s.roiPotential,
+            t(industryKey(s.id)),
+          ]),
           label: {
             show: true,
             position: "right" as const,
@@ -137,20 +154,20 @@ export function IndustryDemandPage() {
         },
       ],
     }),
-    [],
+    [t],
   );
 
   const tableColumns: DataTableColumn<IndustryScore>[] = [
-    { key: "industry", header: "業界", render: (r) => r.industry },
+    { key: "industry", header: t("common.industry"), render: (r) => t(industryKey(r.id)) },
     ...INDUSTRY_AXES.map((axis) => ({
       key: axis.key,
-      header: axis.label,
+      header: t(axisKey(axis.key)),
       align: "right" as const,
       render: (r: IndustryScore) => r[axis.key],
     })),
     {
       key: "total",
-      header: "総合",
+      header: t("common.total"),
       align: "right" as const,
       render: (r: IndustryScore) => calculateTotalScore(r),
     },
@@ -158,11 +175,11 @@ export function IndustryDemandPage() {
 
   const handleExportCsv = () => {
     const rows = INDUSTRY_SCORES.map((s) => {
-      const row: Record<string, string | number> = { 業界: s.industry };
+      const row: Record<string, string | number> = { [t("common.industry")]: t(industryKey(s.id)) };
       INDUSTRY_AXES.forEach((a) => {
-        row[a.label] = s[a.key];
+        row[t(axisKey(a.key))] = s[a.key];
       });
-      row["総合"] = calculateTotalScore(s);
+      row[t("common.total")] = calculateTotalScore(s);
       return row;
     });
     downloadCsv(rows, "industry-demand.csv");
@@ -184,49 +201,44 @@ export function IndustryDemandPage() {
 
       <div className={shared.chartsStack}>
         <ChartCard
-          title="業界 × 評価軸 ヒートマップ"
-          description="1〜5点のスコア。総合スコアの高い順に並べ替え"
-          footerNote="スコアは相対評価のサンプル値です。"
+          title={t("industry.heatmap.title")}
+          description={t("industry.heatmap.desc")}
+          footerNote={t("industry.heatmap.footer")}
         >
           <EChart ref={heatmapRef} option={heatmapOption} height={420} />
         </ChartCard>
 
         <div className={shared.twoColumnGrid}>
-          <ChartCard title="業界別 総合スコア" description="6軸合計スコアで業界を並べ替え">
+          <ChartCard title={t("industry.total.title")} description={t("industry.total.desc")}>
             <EChart option={totalOption} height={380} />
           </ChartCard>
           <ChartCard
-            title="規制リスク × ROI"
-            description="右上は ROI が高く規制も厳しい業界 (潜在的高リターン × 高難易度)"
+            title={t("industry.scatter.title")}
+            description={t("industry.scatter.desc")}
           >
             <EChart option={scatterOption} height={380} />
           </ChartCard>
         </div>
 
-        <ChartCard title="業界スコアテーブル">
+        <ChartCard title={t("industry.table.title")}>
           <DataTable columns={tableColumns} rows={INDUSTRY_SCORES} />
         </ChartCard>
 
         <div className={shared.twoColumnGrid}>
-          <InfoBox title="分析コメント">
-            <p>
-              製造、金融、医療はAI解析サービスの需要が大きい一方、規制や品質管理の重要性も高くなります。
-              小売やマーケティングは、比較的導入しやすく、短期的なROIを確認しやすい領域です。
-            </p>
+          <InfoBox title={t("market.comment.title")}>
+            <p>{t("industry.comment.body")}</p>
           </InfoBox>
-          <InfoBox title="読み取り方" variant="hint">
+          <InfoBox title={t("market.read.title")} variant="hint">
             <ul>
-              <li>ヒートマップ: 濃い青=高スコア、薄い=低スコア</li>
-              <li>総合スコアが高い = AI解析サービスの総合的な需要余地が大きい</li>
-              <li>散布図: 右上=高ROI高規制、左上=高ROI低規制 (攻めやすい)</li>
+              {tList("industry.read.list").map((item) => (
+                <li key={item}>{item}</li>
+              ))}
             </ul>
           </InfoBox>
         </div>
 
-        <InfoBox title="前提" variant="warn">
-          <p>
-            評価軸とスコアはサンプルであり、実際の導入検討には業界固有データと複数情報源の参照が必要です。
-          </p>
+        <InfoBox title={t("dashboard.assumptions.title")} variant="warn">
+          <p>{t("industry.assumptions.body")}</p>
         </InfoBox>
       </div>
     </>
