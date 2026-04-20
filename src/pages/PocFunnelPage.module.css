@@ -1,0 +1,47 @@
+.stageList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stageField {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
+.stageLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.numberInput {
+  width: 100px;
+  text-align: right;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-input-bg);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.warning {
+  font-size: 12px;
+  color: var(--color-warn);
+  background: var(--color-warn-bg);
+  border: 1px solid var(--color-warn-border);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.warning p {
+  margin: 0 0 2px 0;
+}

@@ -1,0 +1,104 @@
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 1020px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.controlPanel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-self: start;
+  position: sticky;
+  top: var(--space-3);
+}
+
+@media (max-width: 1020px) {
+  .controlPanel {
+    position: static;
+  }
+}
+
+.controlGroupHeader {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0 var(--space-1) 0;
+}
+
+.controlsStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.chartsStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.kpiCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kpiLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.kpiValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiNote {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.infoStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.twoColumnGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 960px) {
+  .twoColumnGrid {
+    grid-template-columns: 1fr;
+  }
+}

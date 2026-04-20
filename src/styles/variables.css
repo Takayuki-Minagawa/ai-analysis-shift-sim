@@ -1,0 +1,87 @@
+:root {
+  color-scheme: light;
+
+  --color-bg: #f6f8fb;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f1f4f9;
+  --color-border: #e1e6ee;
+  --color-text: #1f2937;
+  --color-text-muted: #5b6573;
+  --color-primary: #1f6feb;
+  --color-primary-dark: #0d4fbb;
+  --color-primary-soft: rgba(31, 111, 235, 0.08);
+  --color-accent: #ff8a3d;
+  --color-success: #17a673;
+  --color-warn: #d97706;
+  --color-danger: #c0392b;
+
+  --color-table-stripe: #fafcff;
+  --color-input-bg: #ffffff;
+  --color-code-bg: #0f172a;
+  --color-code-text: #e2e8f0;
+
+  --color-info-bg: #ffffff;
+  --color-warn-bg: #fff9ec;
+  --color-warn-border: #facc15;
+  --color-hint-bg: #f2fbf7;
+  --color-hint-border: #22c55e;
+
+  --color-hero-start: #1f6feb;
+  --color-hero-mid: #0d4fbb;
+  --color-hero-end: #173a87;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --font-family:
+    "Hiragino Sans", "Yu Gothic UI", "Meiryo", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --max-content-width: 1280px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #0b1220;
+  --color-surface: #111a2e;
+  --color-surface-alt: #172338;
+  --color-border: #253252;
+  --color-text: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-primary: #60a5fa;
+  --color-primary-dark: #3b82f6;
+  --color-primary-soft: rgba(96, 165, 250, 0.15);
+  --color-accent: #fb923c;
+  --color-success: #34d399;
+  --color-warn: #fbbf24;
+  --color-danger: #f87171;
+
+  --color-table-stripe: #152138;
+  --color-input-bg: #0f172a;
+  --color-code-bg: #020617;
+  --color-code-text: #e2e8f0;
+
+  --color-info-bg: #111a2e;
+  --color-warn-bg: #2b2210;
+  --color-warn-border: #b45309;
+  --color-hint-bg: #0f2a22;
+  --color-hint-border: #15803d;
+
+  --color-hero-start: #1e3a8a;
+  --color-hero-mid: #1e40af;
+  --color-hero-end: #0b1a3c;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.5);
+}

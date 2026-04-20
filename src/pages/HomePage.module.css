@@ -1,0 +1,119 @@
+.hero {
+  background: linear-gradient(
+    135deg,
+    var(--color-hero-start) 0%,
+    var(--color-hero-mid) 55%,
+    var(--color-hero-end) 100%
+  );
+  color: #ffffff;
+  padding: var(--space-6) var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.kicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.heroTitle {
+  font-size: 28px;
+  font-weight: 800;
+  margin: var(--space-2) 0 var(--space-3) 0;
+  color: #ffffff;
+  line-height: 1.25;
+}
+
+.heroLead {
+  font-size: 14px;
+  line-height: 1.8;
+  max-width: 780px;
+  margin: 0;
+  opacity: 0.92;
+}
+
+.sectionHeading {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 960px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.cardLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.cardDesc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.cardArrow {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  font-size: 18px;
+  color: var(--color-primary);
+  opacity: 0.7;
+}
+
+.hypothesesSection {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+}
+
+.hypotheses {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 13px;
+  line-height: 1.8;
+}
