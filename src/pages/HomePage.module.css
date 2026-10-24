@@ -1,119 +1,920 @@
+/* ---------- Hero ---------- */
 .hero {
-  background: linear-gradient(
-    135deg,
-    var(--color-hero-start) 0%,
-    var(--color-hero-mid) 55%,
-    var(--color-hero-end) 100%
-  );
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr);
+  gap: var(--space-6);
+  align-items: center;
+  background:
+    radial-gradient(600px 300px at 0% 0%, rgba(255, 255, 255, 0.12), transparent 70%),
+    linear-gradient(
+      135deg,
+      var(--color-hero-start) 0%,
+      var(--color-hero-mid) 55%,
+      var(--color-hero-end) 100%
+    );
   color: #ffffff;
-  padding: var(--space-6) var(--space-6);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  padding: var(--space-7) var(--space-6);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Subtle dot grid evoking chart paper */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(110deg, transparent 10%, #000 60%);
+  -webkit-mask-image: linear-gradient(110deg, transparent 10%, #000 60%);
+}
+
+.heroGlow {
+  position: absolute;
+  z-index: -1;
+  right: -120px;
+  bottom: -160px;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-hero-glow), transparent 65%);
+  animation: drift 12s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(-60px, -30px);
+  }
+}
+
+.heroText {
+  min-width: 0;
 }
 
 .kicker {
+  display: inline-flex;
   margin: 0;
-  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  opacity: 0.85;
 }
 
 .heroTitle {
-  font-size: 28px;
+  font-size: clamp(26px, 3.4vw, 38px);
   font-weight: 800;
-  margin: var(--space-2) 0 var(--space-3) 0;
+  margin: var(--space-4) 0 var(--space-3) 0;
   color: #ffffff;
   line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+/* Keep each phrase of the title together so it never breaks mid-word. */
+.titlePart {
+  display: inline-block;
 }
 
 .heroLead {
-  font-size: 14px;
-  line-height: 1.8;
-  max-width: 780px;
+  font-size: 14.5px;
+  line-height: 1.9;
+  max-width: 640px;
   margin: 0;
-  opacity: 0.92;
+  color: rgba(255, 255, 255, 0.88);
 }
 
-.sectionHeading {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0 0 var(--space-3) 0;
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
+  margin-top: var(--space-5);
 }
 
-@media (max-width: 960px) {
-  .cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 640px) {
-  .cards {
-    grid-template-columns: 1fr;
-  }
+.ctaPrimary,
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    transform 0.25s var(--ease-spring),
+    box-shadow 0.25s ease,
+    background 0.2s ease;
 }
 
-.card {
+.ctaPrimary {
+  background: #ffffff;
+  color: var(--color-hero-mid);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .ctaPrimary {
+  color: #2c2f9e;
+}
+
+.ctaPrimary:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.55);
+}
+
+.ctaSecondary {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.ctaSecondary:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.ctaPrimary:focus-visible,
+.ctaSecondary:focus-visible,
+.demoMore:focus-visible {
+  outline-color: #ffffff;
+}
+
+/* ---------- Hero demo ---------- */
+.demo {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-4);
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.5);
+}
+
+.demoHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.demoTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.demoTitle svg {
+  color: #ffc4a8;
+}
+
+.demoResult {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+}
+
+.demoResultLabel {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.demoResultValue {
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  animation: value-pop 0.35s var(--ease-spring);
+}
+
+.demoResultValue small {
+  font-size: 14px;
+  margin-left: 2px;
+  opacity: 0.8;
+}
+
+@keyframes value-pop {
+  from {
+    transform: translateY(-4px) scale(1.06);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.demoBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 140px;
+  padding: var(--space-2) 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.demoBar {
+  flex: 1;
+  min-height: 3px;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, #ffd0b8, #ff8a5c);
+  opacity: calc(0.55 + var(--i) * 0.045);
+  transform-origin: bottom;
+  transition: height 0.45s var(--ease-spring);
+  animation: bar-grow 0.7s var(--ease-out) both;
+  animation-delay: calc(var(--i) * 45ms + 150ms);
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.demoControl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.demoControl label {
+  cursor: pointer;
+}
+
+.demoControlLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.demoControlLabel strong {
+  font-size: 13px;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.demoControl input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+.demoControl input:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.demoControl input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #ffb08f 0%,
+    #ffb08f var(--fill),
+    rgba(255, 255, 255, 0.25) var(--fill)
+  );
+}
+
+.demoControl input::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.demoControl input::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #ffb08f;
+}
+
+.demoControl input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 5px rgba(255, 176, 143, 0.35);
+  transition: transform 0.2s var(--ease-spring);
+}
+
+.demoControl input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 5px rgba(255, 176, 143, 0.35);
+}
+
+.demoControl input:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+.demoMore {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  opacity: 0.85;
+}
+
+.demoMore:hover {
+  opacity: 1;
+}
+
+/* ---------- Progress panel ---------- */
+.progressPanel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-5);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+.progressBody {
+  flex: 1;
+  min-width: 240px;
+}
+
+.progressTitle {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 2px 0;
+}
+
+.progressCount {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.progressMessage {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.progressDots {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.progressDots li {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-border-strong);
+  background: var(--color-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.progressDots .dot_visited {
+  border-color: var(--accent);
+  color: var(--color-text);
+  background: var(--color-surface);
+  background: color-mix(in srgb, var(--accent) 12%, var(--color-surface));
+}
+
+.progressDots .dot_completed {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+  animation: pop 0.5s var(--ease-spring);
+}
+
+.progressSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.progressNote {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.resetButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.resetButton:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+/* ---------- Section heading ---------- */
+.sectionHead {
+  margin-bottom: var(--space-4);
+}
+
+.sectionHeading {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+}
+
+.sectionLead {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0;
+  max-width: 760px;
+}
+
+/* ---------- Lesson map ---------- */
+.lessons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  counter-reset: lesson;
+}
+
+.lessonItem {
+  display: flex;
+  min-width: 0;
+}
+
+/* The dashboard is the capstone: give it the full row. */
+.lessonItem:last-child {
+  grid-column: 1 / -1;
+}
+
+.lessonCard {
+  --accent: var(--color-primary);
+  --accent-strong: var(--color-primary-dark);
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   color: var(--color-text);
   text-decoration: none;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    border-color 0.15s ease;
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
+.lessonCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s var(--ease-out);
+}
+
+.lessonCard:hover {
   text-decoration: none;
+  transform: translateY(-4px);
+  border-color: var(--color-border);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--color-border));
+  box-shadow: var(--shadow-md);
 }
 
-.cardLabel {
-  font-size: 15px;
+.lessonCard:hover::before,
+.lesson_completed::before {
+  transform: scaleX(1);
+}
+
+.lessonTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.lessonIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  color: var(--accent);
+  background: var(--color-surface-alt);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  transition:
+    transform 0.4s var(--ease-spring),
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+[data-theme="dark"] .lessonIcon {
+  color: var(--color-text);
+  color: color-mix(in srgb, var(--accent) 60%, #ffffff);
+  background: var(--color-surface-alt);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.lessonCard:hover .lessonIcon {
+  transform: rotate(-8deg) scale(1.08);
+  color: #ffffff;
+  background: var(--accent);
+}
+
+.lessonStep {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+}
+
+.statusChip {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
   font-weight: 700;
-  color: var(--color-primary-dark);
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-alt);
 }
 
-.cardDesc {
-  font-size: 13px;
+.chip_visited {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-soft);
+}
+
+.chip_completed {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.lessonMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lessonTitle {
+  font-size: 17px;
+  font-weight: 800;
+  font-feature-settings: "palt";
+}
+
+.lessonDesc {
+  font-size: 12.5px;
   color: var(--color-text-muted);
   line-height: 1.6;
 }
 
-.cardArrow {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-4);
-  font-size: 18px;
-  color: var(--color-primary);
-  opacity: 0.7;
+.lessonConcept {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent-strong);
+  padding: 1px 0;
 }
 
-.hypothesesSection {
+[data-theme="dark"] .lessonConcept {
+  color: var(--color-text);
+  color: color-mix(in srgb, var(--accent) 60%, #ffffff);
+}
+
+.lessonQuestion {
+  margin-top: auto;
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  padding-right: var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-size: 12.5px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.qMark {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  background: var(--accent-strong);
+}
+
+.lessonGo {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--color-text-muted);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-5);
+  transition:
+    transform 0.3s var(--ease-out),
+    background 0.3s ease,
+    color 0.3s ease;
 }
 
+.lessonCard:hover .lessonGo {
+  transform: translateX(3px);
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Capstone card layout */
+.lessonItem:last-child .lessonCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  background:
+    linear-gradient(110deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%),
+    var(--color-surface);
+}
+
+.lessonItem:last-child .lessonTop {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.lessonItem:last-child .statusChip {
+  margin-left: 0;
+}
+
+.lessonItem:last-child .lessonQuestion {
+  margin-top: 0;
+}
+
+/* ---------- Hypotheses ---------- */
 .hypotheses {
+  list-style: none;
   margin: 0;
-  padding-left: 1.2em;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+}
+
+.hypothesis {
+  --accent: var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.hypothesisNo {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1.4px var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.hypothesisText {
+  flex: 1;
+  margin: 0;
   font-size: 13px;
-  line-height: 1.8;
+  line-height: 1.75;
+}
+
+.hypothesisLink {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--color-text);
+  background: var(--color-surface-alt);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  transition: background 0.2s ease;
+}
+
+.hypothesisLink:hover {
+  text-decoration: none;
+  background: var(--color-surface-alt);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* ---------- Guides ---------- */
+.guides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.guideCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition:
+    border-color 0.2s ease,
+    transform 0.25s var(--ease-out);
+}
+
+.guideCard:hover {
+  text-decoration: none;
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.guideIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.guideText {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.guideTitle {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.guideDesc {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.guideArrow {
+  color: var(--color-text-muted);
+  transition: transform 0.25s var(--ease-out);
+}
+
+.guideCard:hover .guideArrow {
+  transform: translateX(3px);
+  color: var(--color-primary);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+  .demo {
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 1020px) {
+  .lessons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lessonItem:last-child .lessonCard {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .lessonItem:last-child .lessonQuestion {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .hero {
+    padding: var(--space-5) var(--space-4);
+    border-radius: var(--radius-lg);
+  }
+  .heroLead {
+    font-size: 13.5px;
+    line-height: 1.8;
+  }
+  .ctaRow {
+    flex-direction: column;
+  }
+  .ctaPrimary,
+  .ctaSecondary {
+    justify-content: center;
+  }
+  .demo {
+    padding: var(--space-4);
+  }
+  .demoBars {
+    height: 110px;
+    gap: 4px;
+  }
+  .lessons,
+  .guides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lessonItem:last-child .lessonCard {
+    display: flex;
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    gap: var(--space-3);
+  }
+  .lessonItem:last-child .lessonTop {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .lessonItem:last-child .statusChip {
+    margin-left: auto;
+  }
+  .progressPanel {
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+  .progressSide {
+    align-items: flex-start;
+    width: 100%;
+  }
 }

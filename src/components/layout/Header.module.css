@@ -1,7 +1,12 @@
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  backdrop-filter: saturate(1.6) blur(14px);
   border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
 }
 
 .inner {
@@ -19,6 +24,7 @@
   gap: var(--space-3);
   color: var(--color-text);
   text-decoration: none;
+  min-width: 0;
 }
 .brand:hover {
   text-decoration: none;
@@ -28,67 +34,139 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: linear-gradient(140deg, var(--color-hero-mid), var(--color-hero-end));
+  box-shadow: 0 6px 14px -6px var(--color-hero-mid);
+  transition: transform 0.4s var(--ease-spring);
+}
+
+.brandMark path {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.brandMark circle {
+  fill: #ffb08f;
+}
+
+.brand:hover .brandMark {
+  transform: rotate(-8deg) scale(1.06);
 }
 
 .brandText {
   display: flex;
   flex-direction: column;
-  line-height: 1.15;
+  line-height: 1.2;
+  min-width: 0;
 }
 
 .brandTitle {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 15px;
+  letter-spacing: 0.01em;
+  font-feature-settings: "palt";
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brandSubtitle {
   font-size: 11px;
   color: var(--color-text-muted);
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
 }
 
 .actions {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  flex-shrink: 0;
 }
 
 .badge {
-  background: var(--color-accent);
-  color: #ffffff;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+}
+
+[data-theme="light"] .badge {
+  color: #b9441d;
+}
+
+.progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 38px;
+  padding: 0 12px 0 5px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.progress:hover {
+  text-decoration: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-soft);
+}
+
+.progressText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.progressLabel {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.progressCount {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.progressTotal {
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
 .iconButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  height: 32px;
+  gap: 5px;
+  min-width: 38px;
+  height: 38px;
   padding: 0 10px;
   border: 1px solid var(--color-border);
-  background: var(--color-surface-alt);
+  background: var(--color-surface);
   color: var(--color-text);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition:
     background 0.15s ease,
     border-color 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .iconButton:hover {
@@ -97,33 +175,72 @@
   color: var(--color-primary-dark);
 }
 
-.iconButton:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+.iconButton:active {
+  transform: scale(0.94);
 }
 
 .iconText {
   font-size: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 
-.iconGlyph {
-  font-size: 14px;
-  line-height: 1;
+.themeGlyph {
+  display: inline-flex;
+  animation: spin-in 0.5s var(--ease-spring);
+}
+
+@keyframes spin-in {
+  from {
+    transform: rotate(-90deg) scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 960px) {
+  .badge {
+    display: none;
+  }
 }
 
 @media (max-width: 680px) {
-  .brandSubtitle {
+  .brandSubtitle,
+  .progressLabel {
     display: none;
   }
   .brandTitle {
     font-size: 13px;
   }
+  .brandMark {
+    width: 34px;
+    height: 34px;
+  }
   .inner {
     padding: 0 var(--space-3);
     gap: var(--space-2);
   }
-  .badge {
+  .actions {
+    gap: 6px;
+  }
+  .iconButton {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+  }
+  .progress {
+    height: 36px;
+    padding-right: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .iconButton :global(svg) {
     display: none;
+  }
+  .themeGlyph :global(svg) {
+    display: inline;
   }
 }
