@@ -50,3 +50,9 @@ export const formatCompactYen = (value: number, lang: Language = "ja"): string =
 
 export const formatIndex = (value: number, lang: Language = "ja"): string =>
   formatDecimal1(value, lang);
+
+/** Replaces `{name}` placeholders in a translated template. */
+export const fillTemplate = (template: string, vars: Record<string, string | number>): string =>
+  template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in vars ? String(vars[key]) : match,
+  );

@@ -34,7 +34,13 @@ const ManualPage = lazy(() =>
 );
 
 function PageFallback() {
-  return <div style={{ padding: "24px", color: "var(--color-text-muted)" }}>…</div>;
+  return (
+    <div className="page-skeleton" aria-busy="true" aria-live="polite">
+      <span className="page-skeleton__title" />
+      <span className="page-skeleton__line" />
+      <span className="page-skeleton__block" />
+    </div>
+  );
 }
 
 export function AppRouter() {

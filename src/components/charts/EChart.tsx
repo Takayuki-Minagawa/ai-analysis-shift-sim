@@ -22,7 +22,7 @@ export const EChart = forwardRef<EChartHandle, Props>(function EChart(
 ) {
   const chartRef = useRef<ReactECharts | null>(null);
   const { theme } = useTheme();
-  const echartsTheme = theme === "dark" ? "app-dark" : undefined;
+  const echartsTheme = theme === "dark" ? "app-dark" : "app-light";
 
   useImperativeHandle(
     ref,
@@ -32,7 +32,7 @@ export const EChart = forwardRef<EChartHandle, Props>(function EChart(
         return instance?.getDataURL({
           type: "png",
           pixelRatio: 2,
-          backgroundColor: theme === "dark" ? "#111a2e" : "#ffffff",
+          backgroundColor: theme === "dark" ? "#111831" : "#ffffff",
         });
       },
       getEchartsInstance: () => chartRef.current?.getEchartsInstance(),

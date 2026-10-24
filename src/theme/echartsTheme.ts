@@ -1,20 +1,54 @@
 import * as echarts from "echarts";
 
+const FONT_FAMILY =
+  '"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, "Segoe UI", system-ui, sans-serif';
+
+const APP_LIGHT_THEME = {
+  backgroundColor: "transparent",
+  textStyle: { fontFamily: FONT_FAMILY },
+  legend: { icon: "roundRect", itemWidth: 14, itemHeight: 8, textStyle: { color: "#3a4358" } },
+  tooltip: {
+    backgroundColor: "rgba(255,255,255,0.96)",
+    borderColor: "#e2e6f0",
+    borderWidth: 1,
+    padding: [8, 12],
+    textStyle: { color: "#1b2236", fontSize: 12 },
+    extraCssText: "border-radius:10px;box-shadow:0 10px 24px -10px rgba(20,28,60,0.3);",
+  },
+  categoryAxis: {
+    axisLine: { lineStyle: { color: "#cdd3e3" } },
+    axisTick: { show: false },
+    axisLabel: { color: "#5a6478" },
+    nameTextStyle: { color: "#5a6478" },
+  },
+  valueAxis: {
+    axisLabel: { color: "#5a6478" },
+    nameTextStyle: { color: "#5a6478" },
+    splitLine: { lineStyle: { color: "#eceff6", type: "dashed" } },
+  },
+};
+
 const APP_DARK_THEME = {
   backgroundColor: "transparent",
-  textStyle: { color: "#e2e8f0" },
+  textStyle: { color: "#e2e8f0", fontFamily: FONT_FAMILY },
   title: {
     textStyle: { color: "#e2e8f0" },
     subtextStyle: { color: "#94a3b8" },
   },
   legend: {
+    icon: "roundRect",
+    itemWidth: 14,
+    itemHeight: 8,
     textStyle: { color: "#cbd5e1" },
     inactiveColor: "#475569",
   },
   tooltip: {
-    backgroundColor: "#0f172a",
-    borderColor: "#1e293b",
-    textStyle: { color: "#e2e8f0" },
+    backgroundColor: "rgba(13,20,41,0.96)",
+    borderColor: "#2a3558",
+    borderWidth: 1,
+    padding: [8, 12],
+    textStyle: { color: "#e2e8f0", fontSize: 12 },
+    extraCssText: "border-radius:10px;box-shadow:0 10px 24px -10px rgba(0,0,0,0.7);",
   },
   xAxis: {
     axisLine: { lineStyle: { color: "#334155" } },
@@ -47,6 +81,7 @@ let registered = false;
 
 export function registerEchartsThemes(): void {
   if (registered) return;
+  echarts.registerTheme("app-light", APP_LIGHT_THEME);
   echarts.registerTheme("app-dark", APP_DARK_THEME);
   registered = true;
 }
