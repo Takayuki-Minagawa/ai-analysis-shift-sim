@@ -59,6 +59,10 @@
   font-weight: 600;
 }
 
+.statusTitle:focus {
+  outline: none;
+}
+
 .completeButton {
   display: inline-flex;
   align-items: center;

@@ -78,7 +78,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   // Keep several open tabs in sync instead of letting them overwrite each other.
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
-      if (e.key !== STORAGE_KEY) return;
+      // key is null when another tab calls localStorage.clear().
+      if (e.key !== null && e.key !== STORAGE_KEY) return;
       const next = readInitialProgress();
       completedRef.current = next.completed;
       setState(next);

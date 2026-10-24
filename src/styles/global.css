@@ -52,6 +52,11 @@ button {
   outline-offset: 2px;
 }
 
+/* Headings receive programmatic focus after navigation; no ring needed. */
+h1[tabindex="-1"]:focus {
+  outline: none;
+}
+
 h1,
 h2,
 h3,

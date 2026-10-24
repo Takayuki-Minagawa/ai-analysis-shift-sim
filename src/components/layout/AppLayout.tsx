@@ -16,18 +16,22 @@ export function AppLayout() {
   const { markVisited, markCompleted } = useProgress();
   const isLesson = lessonStep(pathname) > 0;
   const mainRef = useRef<HTMLElement | null>(null);
-  const isFirstRoute = useRef(true);
+  // Compared against the previous path (not a "first run" flag) so StrictMode's
+  // double-invoked effect doesn't move focus on the initial load.
+  const prevPathname = useRef(pathname);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
     markVisited(pathname);
-    // After in-app navigation, move focus to the new content so keyboard and
-    // screen-reader users don't fall back to <body>.
-    if (isFirstRoute.current) {
-      isFirstRoute.current = false;
-    } else {
-      mainRef.current?.focus({ preventScroll: true });
-    }
+    if (prevPathname.current === pathname) return;
+    prevPathname.current = pathname;
+    // After in-app navigation, move focus to the new page heading (or <main>
+    // while a lazy page is still loading) so keyboard and screen-reader users
+    // don't fall back to <body>.
+    const heading = mainRef.current?.querySelector<HTMLElement>("h1");
+    const target = heading ?? mainRef.current;
+    if (heading) heading.tabIndex = -1;
+    target?.focus({ preventScroll: true });
   }, [pathname, markVisited]);
 
   // HashRouter owns the URL hash, so the skip link focuses <main> directly.

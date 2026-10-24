@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { LESSON_ROUTES, accentStyle, lessonStep } from "../../app/routes";
 import { useLanguage } from "../../i18n/LanguageContext";
@@ -18,6 +19,16 @@ export function LessonNav({ path }: Props) {
   const next = LESSON_ROUTES[step];
   const done = statusOf(path) === "completed";
   const allDone = completedCount >= totalLessons;
+  const statusTitleRef = useRef<HTMLSpanElement | null>(null);
+  const focusStatusOnDone = useRef(false);
+
+  // The complete button unmounts once clicked; hand focus to the status message.
+  useEffect(() => {
+    if (done && focusStatusOnDone.current) {
+      focusStatusOnDone.current = false;
+      statusTitleRef.current?.focus();
+    }
+  }, [done]);
 
   return (
     <nav className={styles.wrapper} aria-label={t("nav.lessons")}>
@@ -29,7 +40,7 @@ export function LessonNav({ path }: Props) {
           <span className={styles.statusStep}>
             {fillTemplate(t("lesson.stepOfTpl"), { n: step, total: totalLessons })}
           </span>
-          <span className={styles.statusTitle}>
+          <span ref={statusTitleRef} tabIndex={-1} className={styles.statusTitle}>
             {done ? t("lesson.completed") : t("lesson.completeHint")}
           </span>
         </div>
@@ -37,7 +48,10 @@ export function LessonNav({ path }: Props) {
           <button
             type="button"
             className={styles.completeButton}
-            onClick={() => markCompleted(path)}
+            onClick={() => {
+              focusStatusOnDone.current = true;
+              markCompleted(path);
+            }}
           >
             <Icon name="check" size={16} strokeWidth={2.4} />
             {t("lesson.complete")}
