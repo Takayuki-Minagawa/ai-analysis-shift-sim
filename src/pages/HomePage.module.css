@@ -252,6 +252,9 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.demoControl label {
   cursor: pointer;
 }
 
@@ -415,6 +418,7 @@
 .progressDots .dot_visited {
   border-color: var(--accent);
   color: var(--color-text);
+  background: var(--color-surface);
   background: color-mix(in srgb, var(--accent) 12%, var(--color-surface));
 }
 
@@ -496,6 +500,7 @@
 
 .lessonCard {
   --accent: var(--color-primary);
+  --accent-strong: var(--color-primary-dark);
   position: relative;
   flex: 1;
   display: flex;
@@ -529,6 +534,7 @@
 .lessonCard:hover {
   text-decoration: none;
   transform: translateY(-4px);
+  border-color: var(--color-border);
   border-color: color-mix(in srgb, var(--accent) 50%, var(--color-border));
   box-shadow: var(--shadow-md);
 }
@@ -552,6 +558,7 @@
   height: 44px;
   border-radius: 14px;
   color: var(--accent);
+  background: var(--color-surface-alt);
   background: color-mix(in srgb, var(--accent) 13%, transparent);
   transition:
     transform 0.4s var(--ease-spring),
@@ -560,7 +567,9 @@
 }
 
 [data-theme="dark"] .lessonIcon {
+  color: var(--color-text);
   color: color-mix(in srgb, var(--accent) 60%, #ffffff);
+  background: var(--color-surface-alt);
   background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
@@ -623,11 +632,12 @@
   margin-top: 4px;
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-strong);
   padding: 1px 0;
 }
 
 [data-theme="dark"] .lessonConcept {
+  color: var(--color-text);
   color: color-mix(in srgb, var(--accent) 60%, #ffffff);
 }
 
@@ -655,7 +665,7 @@
   font-size: 11px;
   font-weight: 800;
   color: #ffffff;
-  background: var(--accent);
+  background: var(--accent-strong);
 }
 
 .lessonGo {
@@ -691,6 +701,7 @@
   align-items: center;
   gap: var(--space-5);
   padding: var(--space-5);
+  background: var(--color-surface);
   background:
     linear-gradient(110deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%),
     var(--color-surface);
@@ -758,12 +769,14 @@
   padding: 4px 10px;
   border-radius: 999px;
   color: var(--color-text);
+  background: var(--color-surface-alt);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   transition: background 0.2s ease;
 }
 
 .hypothesisLink:hover {
   text-decoration: none;
+  background: var(--color-surface-alt);
   background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 

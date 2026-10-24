@@ -1,6 +1,6 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import { LESSON_ROUTES, findRoute, lessonStep } from "../../app/routes";
+import { LESSON_ROUTES, accentStyle, findRoute, lessonStep } from "../../app/routes";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { fillTemplate } from "../../utils/format";
 import { Icon } from "./Icon";
@@ -19,10 +19,7 @@ export function PageTitle({ title, subtitle, children }: Props) {
   const step = lessonStep(pathname);
 
   return (
-    <header
-      className={styles.wrapper}
-      style={route ? ({ "--accent": route.accent } as CSSProperties) : undefined}
-    >
+    <header className={styles.wrapper} style={route ? accentStyle(route) : undefined}>
       <div className={styles.top}>
         {route ? (
           <span className={styles.iconTile}>

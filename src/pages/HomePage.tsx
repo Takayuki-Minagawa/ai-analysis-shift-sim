@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { GUIDE_ROUTES, LESSON_ROUTES } from "../app/routes";
+import { GUIDE_ROUTES, LESSON_ROUTES, accentStyle } from "../app/routes";
 import { Icon } from "../components/common/Icon";
 import { InfoBox } from "../components/common/InfoBox";
 import { ProgressRing } from "../components/common/ProgressRing";
@@ -69,12 +69,13 @@ function HeroDemo() {
           />
         ))}
       </div>
-      <label className={styles.demoControl}>
+      <div className={styles.demoControl}>
         <span className={styles.demoControlLabel}>
-          {t("home.demo.rate")}
-          <strong>{formatPercent(rate, 0)}</strong>
+          <label htmlFor="hero-demo-rate">{t("home.demo.rate")}</label>
+          <strong aria-hidden>{formatPercent(rate, 0)}</strong>
         </span>
         <input
+          id="hero-demo-rate"
           type="range"
           min={0}
           max={0.4}
@@ -84,7 +85,7 @@ function HeroDemo() {
           aria-valuetext={formatPercent(rate, 0)}
           style={{ "--fill": `${(rate / 0.4) * 100}%` } as CSSProperties}
         />
-      </label>
+      </div>
       <Link to={LESSON_ROUTES[0].path} className={styles.demoMore}>
         {t("home.demo.more")}
         <Icon name="arrowRight" size={14} />
@@ -173,7 +174,7 @@ export function HomePage() {
               <li
                 key={r.path}
                 className={styles[`dot_${statusOf(r.path)}`]}
-                style={{ "--accent": r.accent } as CSSProperties}
+                style={accentStyle(r)}
                 title={t(r.labelKey)}
               >
                 {statusOf(r.path) === "completed" ? (
@@ -209,7 +210,7 @@ export function HomePage() {
                 <Link
                   to={route.path}
                   className={[styles.lessonCard, styles[`lesson_${status}`]].join(" ")}
-                  style={{ "--accent": route.accent } as CSSProperties}
+                  style={accentStyle(route)}
                 >
                   <span className={styles.lessonTop}>
                     <span className={styles.lessonIcon}>
@@ -264,7 +265,7 @@ export function HomePage() {
               <li
                 key={h}
                 className={styles.hypothesis}
-                style={lesson ? ({ "--accent": lesson.accent } as CSSProperties) : undefined}
+                style={lesson ? accentStyle(lesson) : undefined}
               >
                 <span className={styles.hypothesisNo} aria-hidden>
                   {String(i + 1).padStart(2, "0")}

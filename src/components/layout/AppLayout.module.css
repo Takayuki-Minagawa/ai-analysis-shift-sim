@@ -1,6 +1,7 @@
 .main {
   padding: var(--space-5) var(--space-6) var(--space-7);
   overflow-x: hidden;
+  overflow-x: clip;
   min-width: 0;
 }
 

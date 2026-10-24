@@ -75,6 +75,18 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     }
   }, [state]);
 
+  // Keep several open tabs in sync instead of letting them overwrite each other.
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY) return;
+      const next = readInitialProgress();
+      completedRef.current = next.completed;
+      setState(next);
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   const markVisited = useCallback((path: string) => {
     if (!LESSON_PATHS.has(path)) return;
     setState((prev) =>

@@ -1,6 +1,12 @@
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { APP_ROUTES, GUIDE_ROUTES, LESSON_ROUTES, type AppRoute } from "../../app/routes";
+import {
+  APP_ROUTES,
+  GUIDE_ROUTES,
+  LESSON_ROUTES,
+  accentStyle,
+  type AppRoute,
+} from "../../app/routes";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { useProgress } from "../../progress/ProgressContext";
 import { fillTemplate } from "../../utils/format";
@@ -20,8 +26,13 @@ export function Sidebar() {
     const nav = listRef.current;
     const active = nav?.querySelector<HTMLElement>('[aria-current="page"]');
     if (!nav || !active || nav.scrollWidth <= nav.clientWidth) return;
-    const left = active.offsetLeft - nav.clientWidth / 2 + active.clientWidth / 2;
-    nav.scrollTo({ left, behavior: "smooth" });
+    // Measure against the scroller itself; offsetLeft is relative to the nearest positioned <ul>.
+    const navRect = nav.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    const left =
+      nav.scrollLeft + activeRect.left - navRect.left - (nav.clientWidth - activeRect.width) / 2;
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    nav.scrollTo({ left, behavior: reduceMotion ? "auto" : "smooth" });
   }, [pathname]);
 
   const renderLink = (route: AppRoute, step?: number) => {
@@ -32,7 +43,7 @@ export function Sidebar() {
           to={route.path}
           end={route.path === "/"}
           className={({ isActive }) => [styles.link, isActive ? styles.active : ""].join(" ")}
-          style={{ "--accent": route.accent } as CSSProperties}
+          style={accentStyle(route)}
         >
           <span className={styles.iconTile}>
             <Icon name={route.icon} size={17} />

@@ -25,6 +25,7 @@
   border-radius: 8px;
   flex-shrink: 0;
   color: var(--tone);
+  background: var(--color-surface-alt);
   background: color-mix(in srgb, var(--tone) 14%, transparent);
 }
 
@@ -56,10 +57,12 @@
 .warn {
   --tone: var(--color-warn);
   background: var(--color-warn-bg);
+  border-color: var(--color-border);
   border-color: color-mix(in srgb, var(--color-warn-border) 50%, var(--color-border));
 }
 .hint {
   --tone: var(--color-success);
   background: var(--color-hint-bg);
+  border-color: var(--color-border);
   border-color: color-mix(in srgb, var(--color-hint-border) 40%, var(--color-border));
 }

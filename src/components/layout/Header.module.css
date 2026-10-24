@@ -2,6 +2,7 @@
   position: sticky;
   top: 0;
   z-index: 30;
+  background: var(--color-surface);
   background: color-mix(in srgb, var(--color-surface) 82%, transparent);
   -webkit-backdrop-filter: saturate(1.6) blur(14px);
   backdrop-filter: saturate(1.6) blur(14px);

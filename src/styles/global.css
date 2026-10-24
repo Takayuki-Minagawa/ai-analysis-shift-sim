@@ -50,7 +50,6 @@ button {
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 h1,
@@ -92,6 +91,9 @@ code {
   border-radius: var(--radius-sm);
   font-weight: 700;
 }
+[data-theme="dark"] .skip-link {
+  color: #0a0f1f;
+}
 .skip-link:focus {
   top: var(--space-3);
   text-decoration: none;
@@ -104,7 +106,7 @@ code {
   grid-template-areas:
     "header header"
     "sidebar main"
-    "footer footer";
+    "sidebar footer";
   min-height: 100vh;
   background:
     radial-gradient(1200px 500px at 85% -10%, var(--color-bg-glow), transparent 70%),
@@ -208,6 +210,7 @@ code {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

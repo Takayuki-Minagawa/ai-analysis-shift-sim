@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { findRoute } from "../app/routes";
 import { Icon } from "../components/common/Icon";
 import { ProgressRing } from "../components/common/ProgressRing";
@@ -13,12 +13,14 @@ const SPARKS = Array.from({ length: 8 }, (_, i) => i);
 export function AchievementToast() {
   const { t } = useLanguage();
   const { achievement, dismissAchievement, totalLessons } = useProgress();
+  // Hovering or focusing the toast pauses auto-dismiss so it can be read.
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (!achievement) return;
+    if (!achievement || paused) return;
     const timer = window.setTimeout(dismissAchievement, AUTO_DISMISS_MS);
     return () => window.clearTimeout(timer);
-  }, [achievement, dismissAchievement]);
+  }, [achievement, paused, dismissAchievement]);
 
   const route = achievement ? findRoute(achievement.path) : undefined;
   const allDone = achievement ? achievement.completedCount >= totalLessons : false;
@@ -26,7 +28,14 @@ export function AchievementToast() {
   return (
     <div className={styles.region} role="status" aria-live="polite">
       {achievement && route ? (
-        <div key={achievement.id} className={[styles.toast, allDone ? styles.grand : ""].join(" ")}>
+        <div
+          key={achievement.id}
+          className={[styles.toast, allDone ? styles.grand : ""].join(" ")}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+        >
           <span className={styles.badge}>
             <ProgressRing
               value={achievement.completedCount}
@@ -59,7 +68,10 @@ export function AchievementToast() {
           <button
             type="button"
             className={styles.close}
-            onClick={dismissAchievement}
+            onClick={() => {
+              setPaused(false);
+              dismissAchievement();
+            }}
             aria-label={t("toast.close")}
           >
             <Icon name="close" size={14} />

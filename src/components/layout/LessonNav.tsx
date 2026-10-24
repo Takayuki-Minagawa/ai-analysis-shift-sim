@@ -1,6 +1,5 @@
-import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { LESSON_ROUTES, lessonStep } from "../../app/routes";
+import { LESSON_ROUTES, accentStyle, lessonStep } from "../../app/routes";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { useProgress } from "../../progress/ProgressContext";
 import { fillTemplate } from "../../utils/format";
@@ -51,7 +50,7 @@ export function LessonNav({ path }: Props) {
           <Link
             to={prev.path}
             className={[styles.card, styles.prev].join(" ")}
-            style={{ "--accent": prev.accent } as CSSProperties}
+            style={accentStyle(prev)}
           >
             <Icon name="arrowLeft" size={18} className={styles.arrow} />
             <span className={styles.cardText}>
@@ -66,7 +65,7 @@ export function LessonNav({ path }: Props) {
           <Link
             to={next.path}
             className={[styles.card, styles.next].join(" ")}
-            style={{ "--accent": next.accent } as CSSProperties}
+            style={accentStyle(next)}
           >
             <span className={styles.cardIcon}>
               <Icon name={next.icon} size={20} />

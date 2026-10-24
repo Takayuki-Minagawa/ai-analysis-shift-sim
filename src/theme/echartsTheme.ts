@@ -1,11 +1,7 @@
 import * as echarts from "echarts";
 
-const FONT_FAMILY =
-  '"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, "Segoe UI", system-ui, sans-serif';
-
 const APP_LIGHT_THEME = {
   backgroundColor: "transparent",
-  textStyle: { fontFamily: FONT_FAMILY },
   legend: { icon: "roundRect", itemWidth: 14, itemHeight: 8, textStyle: { color: "#3a4358" } },
   tooltip: {
     backgroundColor: "rgba(255,255,255,0.96)",
@@ -30,7 +26,7 @@ const APP_LIGHT_THEME = {
 
 const APP_DARK_THEME = {
   backgroundColor: "transparent",
-  textStyle: { color: "#e2e8f0", fontFamily: FONT_FAMILY },
+  textStyle: { color: "#e2e8f0" },
   title: {
     textStyle: { color: "#e2e8f0" },
     subtextStyle: { color: "#94a3b8" },
